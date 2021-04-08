@@ -1,5 +1,5 @@
-import obj from '../index';
+import obj from "../index";
 
-describe('obj', () => {
-  it('works', () => expect(obj({ isValid: true })).toEqual(2));
+describe("obj", () => {
+    it("works", () => expect(obj({ isValid: true })).toEqual(2));
 });

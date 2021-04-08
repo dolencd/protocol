@@ -1,13 +1,13 @@
 interface Params {
-  isValid: boolean;
+    isValid: boolean;
 }
 
 export default function func({ isValid }: Params) {
-  let foo = 1;
+    let foo = 1;
 
-  if (isValid) {
-    foo = 2;
-  }
+    if (isValid) {
+        foo = 2;
+    }
 
-  return foo;
+    return foo;
 }

@@ -5,3 +5,7 @@ coverage
 yarn-error.log
 tmp
 coverage
+.yarnrc.yaml
+.pnp.js
+.yarn
+.vscode

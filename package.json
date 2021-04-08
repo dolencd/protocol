@@ -7,15 +7,19 @@
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "build": "./scripts/build.sh",
-    "prepublish": "npm run build"
+    "prepublishOnly": "npm run build"
   },
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "license": "MIT",
-  "files": ["dist/"],
+  "type": "module",
+  "files": [
+    "dist/"
+  ],
   "devDependencies": {
     "@types/jest": "^25.2.3",
-    "@types/node": "^14.0.4",
+    "@types/lodash": "^4.14.168",
+    "@types/node": "^14.14.37",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
     "eslint": "^7.0.0",
@@ -31,8 +35,13 @@
     "jest": "^26.0.1",
     "prettier": "^2.0.5",
     "ts-jest": "^26.0.0",
-    "ts-node": "^8.10.1",
+    "ts-node": "^9.1.1",
     "typescript": "^3.9.3",
     "typescript-eslint-parser": "^22.0.0"
+  },
+  "dependencies": {
+    "deep-object-diff": "^1.1.0",
+    "lodash": "^4.17.21",
+    "protobufjs": "^6.10.2"
   }
 }

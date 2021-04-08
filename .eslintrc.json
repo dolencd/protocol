@@ -14,6 +14,12 @@
     "prettier/prettier": "error",
     "import/no-unresolved": "error",
     "import/extensions": "off",
+    "no-console":"off",
+    "no-plusplus":"off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "array-callback-return":"off",
+    "no-continue": "off",
+    "no-param-reassign": "off",
     "require-jsdoc": "off",
     "@typescript-eslint/explicit-function-return-type": "off"
   }

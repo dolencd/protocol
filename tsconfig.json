@@ -2,16 +2,21 @@
   "compilerOptions": {
     "outDir": "dist/",
     "sourceMap": true,
-    "module": "commonjs",
+    "module": "ES2020",
     "moduleResolution": "node",
     "noEmitOnError": true,
-    "target": "es5",
+    "target": "es6",
     "declaration": true,
     "removeComments": false,
     "noImplicitAny": true,
     "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": true,
-    "pretty": true
+    "pretty": true,
+    "lib":[
+      "ES2019"
+    ]
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ]
 }
