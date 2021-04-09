@@ -1,6 +1,11 @@
-import Transcoder from "../transcoder";
-
-const transcoder = new Transcoder();
+import {
+    decodeClientId,
+    encodeClientId,
+    decodeSeqAck,
+    encodeSeqAck,
+    decodeSessionId,
+    encodeSessionId,
+} from "../transcoder";
 
 describe("Basic clientId", () => {
     const input = Buffer.from("02f9010203", "hex");
@@ -8,13 +13,13 @@ describe("Basic clientId", () => {
     const erest = Buffer.from("0203", "hex");
 
     test("decode", () => {
-        const [clientId, rest] = Transcoder.decodeClientId(input);
+        const [clientId, rest] = decodeClientId(input);
         expect(clientId).toEqual(eClientId);
         expect(rest).toEqual(erest);
     });
 
     test("encode", () => {
-        const output = Transcoder.encodeClientId(eClientId, erest);
+        const output = encodeClientId(eClientId, erest);
         expect(output).toEqual(input);
     });
 });
@@ -27,7 +32,7 @@ describe("Basic seqAck", () => {
     const erest = Buffer.from("010203", "hex");
 
     test("decode", () => {
-        const [seq, acks, rest] = transcoder.decodeSeqAck(input);
+        const [seq, acks, rest] = decodeSeqAck(input);
         expect(seq).toEqual(eseq);
         expect(acks).toEqual(eacks);
         expect(rest).toEqual(erest);
@@ -35,7 +40,7 @@ describe("Basic seqAck", () => {
 
     test("encode", () => {
         const eoutput = Buffer.from("f90206030205020602070208020902010203".replace(" ", ""), "hex");
-        const output = transcoder.encodeSeqAck(eseq, eacks, erest);
+        const output = encodeSeqAck(eseq, eacks, erest);
 
         expect(output).toEqual(eoutput);
     });
@@ -47,13 +52,13 @@ describe("sessionId", () => {
     const eSessionId = 505;
     const erest = Buffer.from("0203", "hex");
     test("decode", () => {
-        const [sessionId, rest] = transcoder.decodeSessionId(input);
+        const [sessionId, rest] = decodeSessionId(input);
         expect(sessionId).toEqual(eSessionId);
         expect(rest).toEqual(erest);
     });
 
     test("encode", () => {
-        const output = transcoder.encodeSessionId(eSessionId, erest);
+        const output = encodeSessionId(eSessionId, erest);
         expect(output).toEqual(input);
     });
 });

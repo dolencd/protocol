@@ -1,7 +1,5 @@
 import * as EventEmitter from "events";
-import Transcoder from "./transcoder";
-
-const transcoder = new Transcoder();
+import * as tc from "./transcoder";
 
 export default class LibBot extends EventEmitter {
     received: Map<number, Buffer>;
@@ -68,7 +66,7 @@ export default class LibBot extends EventEmitter {
         console.log(`bot sending seq:${this.maxSendSeq}, len:${buf.length}`);
         this.sendFail.forEach((v, k) => {
             console.log(`bot sending failed message ${k}`, v);
-            toSend.push(transcoder.encodeSeqAck(k, acks, v));
+            toSend.push(tc.encodeSeqAck(k, acks, v));
             this.sent.set(k, {
                 buf: v,
                 maxAck: acks[0],
@@ -76,7 +74,7 @@ export default class LibBot extends EventEmitter {
         });
         this.sendFail.clear();
 
-        toSend.push(transcoder.encodeSeqAck(this.maxSendSeq, acks, buf));
+        toSend.push(tc.encodeSeqAck(this.maxSendSeq, acks, buf));
         this.sent.set(this.maxSendSeq, {
             buf,
             maxAck: acks[0],
@@ -87,7 +85,7 @@ export default class LibBot extends EventEmitter {
     }
 
     receiveMessage(buf: Buffer) {
-        const [seq, acks, payload] = transcoder.decodeSeqAck(buf);
+        const [seq, acks, payload] = tc.decodeSeqAck(buf);
         console.log(`bot received message seq:${seq} plen:${payload.length} acks:`, acks);
         // incoming acks
 
