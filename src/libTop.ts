@@ -1,4 +1,3 @@
-import * as protobuf from "protobufjs";
 import * as EventEmitter from "events";
 import { isEmpty } from "lodash";
 import { diff, addedDiff } from "deep-object-diff";
@@ -17,6 +16,11 @@ import IdCreator from "./idCreator";
 // 		}
 // 	});
 // }
+
+interface Transcoder {
+    encode: (obj: Record<string, any>) => Buffer;
+    decode: (buf: Buffer) => Record<string, any>;
+}
 
 function removeUndefinedAndEmpty(o: any) {
     Object.keys(o).map((k) => {
@@ -55,14 +59,13 @@ export default class LibTop extends EventEmitter {
 
     events: Array<Buffer>;
 
-    mainType: protobuf.Type;
+    tc: Transcoder;
 
     idCreator: IdCreator;
 
-    constructor() {
+    constructor(tc: Transcoder) {
         super();
-        const protoRoot = protobuf.loadSync("protocol.proto");
-        this.mainType = protoRoot.lookupType("main");
+        this.tc = tc;
 
         this.idCreator = new IdCreator(1, 65530);
 
@@ -74,35 +77,14 @@ export default class LibTop extends EventEmitter {
         this.events = [];
     }
 
-    decodeMessage(buf: Buffer) {
-        const msg = this.mainType.decode(buf);
-        const obj = this.mainType.toObject(msg, {
-            enums: String,
-        });
-
-        return obj;
-    }
-
-    encodeMessage(obj: Record<string, any>) {
-        // const err = this.mainType.verify(obj)
-        // if(err) {
-        //     throw new Error(err)
-        // }
-        // console.log("testt", obj)
-        const msg = this.mainType.fromObject(obj);
-        const buf = this.mainType.encode(msg).finish();
-
-        return buf;
-    }
-
-    acceptMessage(binMsg: Buffer) {
+    receiveMessage(buf: Buffer): number {
         // console.log("top accept", binMsg.length)
-        const obj = this.decodeMessage(binMsg);
+        const obj = this.tc.decode(buf);
 
         // console.log("top decoded", obj)
         if (obj.events)
-            obj.events.map((buf: Buffer) => {
-                this.emit("event", buf);
+            obj.events.map((b: Buffer) => {
+                this.emit("event", b);
             });
 
         // send rpc - what i want the other process to do
@@ -150,6 +132,7 @@ export default class LibTop extends EventEmitter {
         //     this.lastDelete = obj.objDelete
         //     // console.log("got delete", obj.objDelete)
         // }
+        return 0;
     }
 
     callFn(method: string, args: Buffer, cb: Function) {
@@ -199,7 +182,7 @@ export default class LibTop extends EventEmitter {
             events,
         };
         const cleanedObject = removeUndefinedAndEmpty(finishedObject);
-        const buf = this.encodeMessage(cleanedObject);
+        const buf = this.tc.encode(cleanedObject);
         // console.log(`top sending len:${buf.length}`)
         this.emit("send", buf);
         // console.log("send", buf.length)
