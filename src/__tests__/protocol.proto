@@ -31,6 +31,7 @@ enum Methods {
     sum = 1;
     bla = 2;
     send = 3;
+    add = 4;
 }
 
 message obj {
@@ -57,9 +58,6 @@ message rpcCall {
     Methods method = 3;
     bytes args = 1;
     bytes returns = 2;
-
-    //optional timestamps
-    fixed32 callTimestamp = 4;
-    fixed32 resolveTimestamp = 5;
+    bool isError = 4;
 }
 
