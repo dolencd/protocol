@@ -84,7 +84,7 @@ export default class LibBot extends EventEmitter {
         return toSend;
     }
 
-    receiveMessage(buf: Buffer) {
+    receiveMessage(buf: Buffer): number {
         const [seq, acks, payload] = tc.decodeSeqAck(buf);
         console.log(`bot received message seq:${seq} plen:${payload.length} acks:`, acks);
         // incoming acks
@@ -123,7 +123,7 @@ export default class LibBot extends EventEmitter {
 
         if (seq <= this.maxEmittedSeq) {
             // console.log(`bot got old message seq:${seq}, maxEmit:${this.maxEmittedSeq}`)
-            return;
+            return this.received.size;
         }
         this.received.set(seq, payload);
 
@@ -147,5 +147,7 @@ export default class LibBot extends EventEmitter {
                 Array.from(this.received.keys())
             );
         }
+
+        return this.received.size;
     }
 }
