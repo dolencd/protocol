@@ -145,17 +145,13 @@ describe("LibTop roundtrip", () => {
     const tp2 = new LibTop(tc);
 
     tp1.on("send", (buf) => {
-        // console.log(tc.decode(buf));
-
         tp2.receiveMessage(buf);
         tp2.receiveMessageOrdered(buf);
     });
 
     tp2.on("send", (buf) => {
-        // console.log(tc.decode(buf));
-
-        tp2.receiveMessage(buf);
-        tp2.receiveMessageOrdered(buf);
+        tp1.receiveMessage(buf);
+        tp1.receiveMessageOrdered(buf);
     });
 
     const rpcFn = jest.fn((method, args, cb) => {
@@ -177,38 +173,34 @@ describe("LibTop roundtrip", () => {
         expect(eventFn.mock.calls).toEqual([[Buffer.from("1")], [Buffer.from("2")], [Buffer.from("3")]]);
     });
 
-    test("RPC execution", () => {
-        setTimeout(() => {
-            tp1.send();
-            setTimeout(() => {
-                tp2.send();
-            }, 1);
-        }, 1);
-
-        expect(
-            Promise.allSettled([
-                tp1.callFn("add", Buffer.from("12345")),
-                tp1.callFn("sum"),
-                tp1.callFnOrdered("sum", Buffer.from("12345")),
-                tp1.callFnOrdered("add"),
-            ])
-        ).resolves.toEqual([
-            {
-                status: "fulfilled",
-                value: Buffer.concat([Buffer.from([0, 0]), Buffer.from("123asd45")]),
-            },
-            {
-                status: "rejected",
-                reason: Buffer.from([0, 0]),
-            },
-            {
-                status: "rejected",
-                reason: Buffer.concat([Buffer.from([0, 0]), Buffer.from("12345")]),
-            },
-            {
-                status: "fulfilled",
-                value: Buffer.from([0, 0]),
-            },
-        ]);
+    test("RPC execution", (done) => {
+        Promise.allSettled([
+            tp1.callFn("add", Buffer.from("12345")),
+            tp1.callFn("sum"),
+            tp1.callFnOrdered("sum", Buffer.from("12345")),
+            tp1.callFnOrdered("add"),
+        ]).then((res) => {
+            expect(res).toEqual([
+                {
+                    status: "fulfilled",
+                    value: Buffer.concat([Buffer.from([0, 0]), Buffer.from("12345")]),
+                },
+                {
+                    status: "rejected",
+                    reason: Buffer.from([0, 0]),
+                },
+                {
+                    status: "rejected",
+                    reason: Buffer.concat([Buffer.from([0, 0]), Buffer.from("12345")]),
+                },
+                {
+                    status: "fulfilled",
+                    value: Buffer.from([0, 0]),
+                },
+            ]);
+            done();
+        });
+        tp1.send();
+        tp2.send();
     });
 });
