@@ -5,9 +5,8 @@ describe("Full cycle", () => {
         const bt1 = new LibBot();
         const bt2 = new LibBot();
 
-        bt1.on("send", (msgArr) => {
-            msgArr.map(bt2.receiveMessage.bind(bt2));
-        });
+        bt1.on("send", bt2.receiveMessage.bind(bt2));
+
         const outArr: Array<Buffer> = [];
         bt2.on("message", (buf) => {
             outArr.push(buf);
@@ -20,7 +19,7 @@ describe("Full cycle", () => {
         for (let i = 1; i < 20; i++) {
             const b = Buffer.from([i]);
             inputArr.push(b);
-            bt1.sendMessage(b);
+            bt1.send(b);
         }
 
         expect(outArr).toEqual(inputArr);
@@ -32,8 +31,8 @@ describe("Full cycle", () => {
         const bt2 = new LibBot();
 
         const messagesInTransit: Array<Array<Buffer>> = [];
-        bt1.on("send", (msgArr) => {
-            messagesInTransit.unshift(msgArr);
+        bt1.on("send", (msg: Buffer) => {
+            messagesInTransit.unshift(msg);
         });
 
         const outArr: Array<Buffer> = [];
@@ -48,12 +47,10 @@ describe("Full cycle", () => {
         for (let i = 1; i < 20; i++) {
             const b = Buffer.from([i]);
             inputArr.push(b);
-            bt1.sendMessage(b);
+            bt1.send(b);
         }
 
-        messagesInTransit.map((msgArr) => {
-            msgArr.map(bt2.receiveMessage.bind(bt2));
-        });
+        messagesInTransit.map(bt2.receiveMessage.bind(bt2));
 
         expect(outArrOrdered).toEqual(inputArr);
         expect(outArr).toEqual(inputArr.reverse());
@@ -65,14 +62,15 @@ describe("Full cycle", () => {
 
         let failSomeMessages = true;
 
-        bt1.on("send", (msgArr) => {
-            if (failSomeMessages || Math.random() > 0.2) {
-                msgArr.map(bt2.receiveMessage.bind(bt2));
+        let count = 0;
+        bt1.on("send", (msg) => {
+            count++;
+            if (failSomeMessages && count % 3 === 0) {
+                return;
             }
+            bt2.receiveMessage.call(bt2, msg);
         });
-        bt2.on("send", (msgArr) => {
-            msgArr.map(bt1.receiveMessage.bind(bt1));
-        });
+        bt2.on("send", bt1.receiveMessage.bind(bt1));
 
         const outArrOrdered: Array<Buffer> = [];
         bt2.on("messageOrdered", (buf) => {
@@ -83,16 +81,14 @@ describe("Full cycle", () => {
         for (let i = 1; i < 20; i++) {
             const b = Buffer.from([i]);
             inputArr.push(b);
-            bt1.sendMessage(b);
+            bt1.send(b);
         }
 
         // disable bad network
         failSomeMessages = false;
         // inform
-        bt2.sendMessage(Buffer.allocUnsafe(0));
-        const b = Buffer.from([20]);
-        inputArr.push(b);
-        bt1.sendMessage(b);
+        bt2.send(Buffer.allocUnsafe(0));
+        bt1.sendFailedMessages();
 
         process.nextTick(() => {
             expect(outArrOrdered).toEqual(inputArr);

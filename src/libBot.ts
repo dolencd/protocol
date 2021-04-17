@@ -2,49 +2,131 @@ import * as EventEmitter from "events";
 import * as tc from "./transcoder";
 
 export default class LibBot extends EventEmitter {
+    /**
+     * received but not emitted (waiting for correct order)
+     */
     received: Map<number, Buffer>;
 
+    /**
+     * Sent and unacknowledged (under maxAck)
+     */
     sent: Map<
         number,
         {
             buf: Buffer;
-            maxAck: number;
+            maxAck?: number;
         }
     >;
 
+    /**
+     * Known failed delivery
+     */
     sendFail: Map<number, Buffer>;
 
+    /**
+     * highest sent seq known to have been received (may be missing some messages)
+     */
     maxIncAck: number;
 
+    /**
+     * highest seq received so far
+     */
     maxIncSeq: number;
 
+    /**
+     * highest ack that was sent and is known to have been received
+     */
     maxAckKnownReceived: number;
 
+    /**
+     * maximum sequence number sent so far
+     */
     maxSendSeq: number;
 
+    /**
+     * highest received and emitted (received all messages up to this point)
+     */
     maxEmittedSeq: number;
 
     constructor() {
         super();
-        this.received = new Map(); // received but not emitted (waiting for correct order)
-        this.sent = new Map(); // sent and unacknowledged (under maxAck)
-        this.sendFail = new Map(); // known failed delivery
+        this.received = new Map();
+        this.sent = new Map();
+        this.sendFail = new Map();
 
-        this.maxIncAck = 0; // highest sent seq known to have been received (may be missing some messages)
-        this.maxIncSeq = 0; // highest seq received so far
-        this.maxAckKnownReceived = 0; // highest ack that was sent and is known to have been received
+        this.maxIncAck = 0;
+        this.maxIncSeq = 0;
+        this.maxAckKnownReceived = 0;
 
-        this.maxSendSeq = 0; // maximum sequence number sent so far
-        this.maxEmittedSeq = 0; // highest received and emitted (received all messages up to this point)
+        this.maxSendSeq = 0;
+        this.maxEmittedSeq = 0;
     }
 
-    sendMessage(buf: Buffer) {
+    /**
+     * Number of messages that are known to have been lost (from received acks).
+     */
+    get failedMessageCount() {
+        return this.sendFail.size;
+    }
+
+    /**
+     * Messages that have been sent, but not yet acked.
+     */
+    get unackedMessageCount() {
+        return this.sent.size;
+    }
+
+    /**
+     * Send a message to the other side
+     * @function send
+     * @param  {Buffer} message Message to send
+     * @returns  {Buffer} Message to forward to the other side
+     */
+    send(buf: Buffer): Buffer {
         this.maxSendSeq++;
+        const acks = this.getAcks();
+
+        const msg = tc.encodeSeqAck(this.maxSendSeq, acks, buf);
+        this.sent.set(this.maxSendSeq, {
+            buf,
+            maxAck: acks[0],
+        });
+        this.emit("send", msg);
+        return msg;
+    }
+
+    /**
+     * Resend messages that are known to have been lost.
+     * @function sendFailedMessages send
+     * @returns  {Array<Buffer>} Messages to forward to the other side
+     */
+    sendFailedMessages(): Array<Buffer> {
+        // TODO: add options: force retransmit, add acks (to none, all, some?)
+        const toSend: Array<Buffer> = [];
+        // console.log(`bot sending seq:${this.maxSendSeq}, len:${buf.length}`, buf);
+        this.sendFail.forEach((v, k) => {
+            const msg = tc.encodeSeqAck(k, [], v);
+            this.emit("send", msg);
+            toSend.push(msg);
+            this.sent.set(k, {
+                buf: v,
+            });
+        });
+        this.sendFail.clear();
+        return toSend;
+    }
+
+    /**
+     * Get the current array of acknowledgements
+     * @function getAcks
+     * @param  {Array<number>} acks
+     * @returns void
+     */
+    getAcks(): Array<number> {
         const acks: Array<number> = [];
         if (this.maxIncSeq > this.maxAckKnownReceived) {
             // some acks must be sent
             acks.push(this.maxIncSeq);
-
             for (let i = this.maxEmittedSeq + 1; i <= this.maxIncSeq; i++) {
                 // // console.log(`---other acks min:${this.maxEmittedSeq}, max:${this.maxIncSeq}, i:${i}`, this.received.has(i))
                 if (this.received.has(i)) {
@@ -55,35 +137,15 @@ export default class LibBot extends EventEmitter {
                 acks.push(i);
             }
         }
-
-        // console.log(
-        //     `bot send acks maxIncSeq:${this.maxIncSeq}, maxEmitted:${this.maxEmittedSeq}, received:${Array.from(
-        //         this.received.keys()
-        //     )}||`,
-        //     acks
-        // );
-        const toSend = [];
-        // console.log(`bot sending seq:${this.maxSendSeq}, len:${buf.length}`);
-        this.sendFail.forEach((v, k) => {
-            // console.log(`bot sending failed message ${k}`, v);
-            toSend.push(tc.encodeSeqAck(k, acks, v));
-            this.sent.set(k, {
-                buf: v,
-                maxAck: acks[0],
-            });
-        });
-        this.sendFail.clear();
-
-        toSend.push(tc.encodeSeqAck(this.maxSendSeq, acks, buf));
-        this.sent.set(this.maxSendSeq, {
-            buf,
-            maxAck: acks[0],
-        });
-        // if (toSend.length > 1) console.log(`bot send count:${toSend.length}`);
-        this.emit("send", toSend);
-        return toSend;
+        return acks;
     }
 
+    /**
+     * A new message has been received from the other side
+     * @function receiveMessage
+     * @param  {Buffer} message
+     * @returns void
+     */
     receiveMessage(buf: Buffer): void {
         const [seq, acks, payload] = tc.decodeSeqAck(buf);
         // console.log(`bot received message seq:${seq} plen:${payload.length} acks:`, acks);
@@ -104,7 +166,7 @@ export default class LibBot extends EventEmitter {
                 if (missingAcks.includes(k) || k > maxAck) {
                     // console.log(`bot delivery failed. set up for redelivery seq:${k}, maxAck:${maxAck}`, missingAcks);
                     this.sendFail.set(k, v.buf);
-                } else if (v.maxAck > this.maxAckKnownReceived) {
+                } else if (v.maxAck && v.maxAck > this.maxAckKnownReceived) {
                     this.maxAckKnownReceived = v.maxAck;
                 }
                 // // console.log(`bot delete seq:${k} from sent, maxAck:${maxAck}`, missingAcks)
