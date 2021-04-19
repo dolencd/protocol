@@ -66,8 +66,8 @@ export function encodeSeqAck(seq: number, acks: Array<number> = [], rest: Buffer
     }
 
     acks.map((v) => {
-        if (!Number.isInteger(v) || v > 65535 || v < 1) {
-            throw new Error(`All acks must be int in [1,65535]. This is:${v} of type:${typeof v}`);
+        if (!Number.isInteger(v) || v > 65535 || v < 0) {
+            throw new Error(`All acks must be int in [0,65535]. This is:${v} of type:${typeof v}`);
         }
     });
 
@@ -95,7 +95,7 @@ export function encodeSessionId(sessionId: number, rest = Buffer.from("")): Buff
     if (!Buffer.isBuffer(rest)) {
         throw new Error("Input should be Buffer");
     }
-    if (!Number.isInteger(sessionId) || sessionId > 65535 || sessionId < 1) {
+    if (!Number.isInteger(sessionId) || sessionId > 65535 || sessionId < 0) {
         throw new Error("SessionId must be in [1, 65535]");
     }
     const output = Buffer.alloc(SES_LEN);
