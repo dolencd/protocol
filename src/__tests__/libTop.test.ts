@@ -1,7 +1,7 @@
 import PbTranscoder from "../PbTranscoder";
 import LibTop from "../libTop";
 
-const tc = new PbTranscoder("./src/__tests__/protocol.proto", "main");
+const tc = new PbTranscoder("./protocol.proto", "main");
 
 describe("Receive message", () => {
     const obj = {

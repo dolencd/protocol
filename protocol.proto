@@ -3,6 +3,9 @@ option go_package = "test/protocol";
 
 message main {
 
+    //Buffer containing authentication information
+    bytes auth = 10;
+
     // The receiver replaces its existing state with objAll
     obj objAll = 20;
 

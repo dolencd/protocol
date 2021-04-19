@@ -43,7 +43,7 @@ describe("Full object", () => {
         reason: "asdf",
     };
 
-    const pbTranscoder = new PbTranscoder("./src/__tests__/protocol.proto", "main");
+    const pbTranscoder = new PbTranscoder("./protocol.proto", "main");
 
     test("Decoded obj is the same as input obj", () => {
         const encoded = pbTranscoder.encode(obj);
