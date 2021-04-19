@@ -170,6 +170,14 @@ describe("Establishing and communication - NO LibBot + perfect communication", (
     test("No errors emitted during creation", () => {
         expect(err1).toBeNull();
         expect(err2).toBeNull();
+
+        expect(cp.maxEmittedSeq).toBeNull();
+        expect(cp.maxIncSeq).toBeNull();
+        expect(cp.maxSendSeq).toBeNull();
+
+        expect(sp.maxEmittedSeq).toBeNull();
+        expect(sp.maxIncSeq).toBeNull();
+        expect(sp.maxSendSeq).toBeNull();
     });
     test("Events", () => {
         cp.sendEvent(Buffer.from("1"));
@@ -179,6 +187,13 @@ describe("Establishing and communication - NO LibBot + perfect communication", (
         cp.send();
 
         expect(eventFn.mock.calls).toEqual([[Buffer.from("1")], [Buffer.from("2")], [Buffer.from("3")]]);
+        expect(cp.maxEmittedSeq).toBeNull();
+        expect(cp.maxIncSeq).toBeNull();
+        expect(cp.maxSendSeq).toBeNull();
+
+        expect(sp.maxEmittedSeq).toBeNull();
+        expect(sp.maxIncSeq).toBeNull();
+        expect(sp.maxSendSeq).toBeNull();
     });
 
     test("RPC execution", (done) => {
@@ -206,6 +221,13 @@ describe("Establishing and communication - NO LibBot + perfect communication", (
                     value: Buffer.from([0, 0]),
                 },
             ]);
+            expect(cp.maxEmittedSeq).toBeNull();
+            expect(cp.maxIncSeq).toBeNull();
+            expect(cp.maxSendSeq).toBeNull();
+
+            expect(sp.maxEmittedSeq).toBeNull();
+            expect(sp.maxIncSeq).toBeNull();
+            expect(sp.maxSendSeq).toBeNull();
             done();
         });
         cp.send();
