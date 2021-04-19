@@ -29,12 +29,22 @@ export function decodeSeqAck(buf: Buffer): [number, Array<number>, Buffer] {
     if (!Buffer.isBuffer(buf)) {
         throw new Error("Input should be Buffer");
     }
+
+    let requiredLengthMin = SEQ_LEN + 1;
+    if (buf.length < requiredLengthMin) {
+        throw new Error(`Buffer too short. is:${buf.length} min:${requiredLengthMin}`);
+    }
     let offset = 0;
     const seq = buf.readUInt16LE(offset);
     offset += SEQ_LEN;
     const ackLen = buf.readUInt8(offset);
     offset += 1;
-    // todo: guard length
+
+    requiredLengthMin += ackLen * SEQ_LEN;
+    if (buf.length < requiredLengthMin) {
+        throw new Error(`Buffer too short. is:${buf.length} min:${requiredLengthMin}`);
+    }
+
     const acks = [];
     for (let i = 0; i < ackLen; i++) {
         const ack = buf.readUInt16LE(offset);
@@ -44,6 +54,10 @@ export function decodeSeqAck(buf: Buffer): [number, Array<number>, Buffer] {
             continue;
         }
 
+        requiredLengthMin += 2 * SEQ_LEN;
+        if (buf.length < requiredLengthMin) {
+            throw new Error(`Buffer too short. is:${buf.length} min:${requiredLengthMin}`);
+        }
         let ack1 = buf.readUInt16LE(offset);
         offset += SEQ_LEN;
         const ack2 = buf.readUInt16LE(offset);

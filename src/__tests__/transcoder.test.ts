@@ -62,3 +62,25 @@ describe("sessionId", () => {
         expect(output).toEqual(input);
     });
 });
+
+describe("Minimal message - seqAck", () => {
+    const input = Buffer.from("f90200", "hex");
+
+    const eseq = 761;
+    const eacks: Array<number> = [];
+    const erest = Buffer.allocUnsafe(0);
+
+    test("decode", () => {
+        const [seq, acks, rest] = decodeSeqAck(input);
+        expect(seq).toEqual(eseq);
+        expect(acks).toEqual(eacks);
+        expect(rest).toEqual(erest);
+    });
+
+    test("encode", () => {
+        const eoutput = Buffer.from("f90200", "hex");
+        const output = encodeSeqAck(eseq, eacks, erest);
+
+        expect(output).toEqual(eoutput);
+    });
+});
