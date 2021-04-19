@@ -1,7 +1,7 @@
 import { loadSync as pbLoadSync, Type as pbType } from "protobufjs";
 
-export default class ProtoTranscoder {
-    private type: pbType;
+export default class PbTranscoder {
+    readonly type: pbType;
 
     constructor(protoPath: string, typeName = "main") {
         this.type = pbLoadSync(protoPath).lookupType(typeName);
