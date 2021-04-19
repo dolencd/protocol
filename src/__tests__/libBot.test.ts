@@ -30,7 +30,7 @@ describe("Full cycle", () => {
         const bt1 = new LibBot();
         const bt2 = new LibBot();
 
-        const messagesInTransit: Array<Array<Buffer>> = [];
+        const messagesInTransit: Array<Buffer> = [];
         bt1.on("send", (msg: Buffer) => {
             messagesInTransit.unshift(msg);
         });
