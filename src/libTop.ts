@@ -219,17 +219,31 @@ export default class LibTop extends EventEmitter {
         });
     }
 
+    /**
+     * Send event without ordering
+     * @function sendEvent
+     * @param {Buffer} event Event to send
+     */
     sendEvent(event: Buffer) {
         // console.log(`top send event len:${event.length}`, event)
         this.events.push(event);
     }
 
+    /**
+     * Send event with guaranteed ordering
+     * @function sendEvent
+     * @param {Buffer} event Event to send
+     */
     sendEventOrdered(event: Buffer) {
         // console.log(`top send event len:${event.length}`, event)
         this.eventsOrdered.push(event);
     }
 
-    send() {
+    /**
+     * Emit message with all unsent data
+     * @function send
+     */
+    send(): Buffer {
         const reqRpc: Record<number, RpcReqObj> = {};
         this.requests.forEach((val: FnCall, key: number) => {
             if (val.sent) return;
