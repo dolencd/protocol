@@ -102,8 +102,8 @@ export class Protocol extends EventEmitter {
      * @param  {Buffer} event Event to send in the shape of a Buffer
      * @returns  {void}
      */
-    get sendEvent(): (event: Buffer) => void {
-        return this.tp.sendEvent.bind(this.tp);
+    sendEvent(event: Buffer): void {
+        return this.tp.sendEvent.call(this.tp, event);
     }
 
     /**
@@ -112,8 +112,8 @@ export class Protocol extends EventEmitter {
      * @param  {Buffer} event Event to send in the shape of a Buffer
      * @returns  {void}
      */
-    get sendEventOrdered(): (event: Buffer) => void {
-        return this.tp.sendEventOrdered.bind(this.tp);
+    sendEventOrdered(event: Buffer): void {
+        return this.tp.sendEventOrdered.call(this.tp, event);
     }
 
     /**
@@ -124,8 +124,8 @@ export class Protocol extends EventEmitter {
      * @param  {Buffer} args Optional arguments encoded as a Buffer
      * @returns  {Promise<Buffer>} Return values of the function call
      */
-    get callFn(): (method: string, args?: Buffer) => Promise<Buffer> {
-        return this.tp.callFn.bind(this.tp);
+    callFn(method: string, args?: Buffer): Promise<Buffer> {
+        return this.tp.callFn.call(this.tp, method, args);
     }
 
     /**
@@ -136,7 +136,7 @@ export class Protocol extends EventEmitter {
      * @param  {Buffer} args Optional arguments encoded as a Buffer
      * @returns  {Promise<Buffer>} Return values of the function call
      */
-    get callFnOrdered(): (method: string, args?: Buffer) => Promise<Buffer> {
-        return this.tp.callFnOrdered.bind(this.tp);
+    callFnOrdered(method: string, args?: Buffer): Promise<Buffer> {
+        return this.tp.callFnOrdered.call(this.tp, method, args);
     }
 }
