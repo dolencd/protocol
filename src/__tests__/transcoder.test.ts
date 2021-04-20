@@ -8,7 +8,7 @@ import {
     encodeSessionId,
 } from "../transcoder";
 
-describe("Basic clientId", () => {
+describe("clientId", () => {
     const input = Buffer.from("02f9010203", "hex");
     const eClientId = Buffer.from("f901", "hex");
     const erest = Buffer.from("0203", "hex");
@@ -23,9 +23,40 @@ describe("Basic clientId", () => {
         const output = encodeClientId(eClientId, erest);
         expect(output).toEqual(input);
     });
+
+    test("decode - error", () => {
+        expect(() => {
+            // @ts-ignore
+            decodeClientId(12);
+        }).toThrow(TypeError);
+
+        expect(() => {
+            decodeClientId(Buffer.allocUnsafe(1));
+        }).toThrow(Error);
+
+        expect(() => {
+            decodeClientId(Buffer.from([3, 0, 0]));
+        }).toThrow(Error);
+    });
+
+    test("encode - error", () => {
+        expect(() => {
+            // @ts-ignore
+            encodeClientId(12, Buffer.allocUnsafe(3));
+        }).toThrow(TypeError);
+
+        expect(() => {
+            // @ts-ignore
+            encodeClientId(Buffer.allocUnsafe(3), 12);
+        }).toThrow(TypeError);
+
+        expect(() => {
+            encodeClientId(Buffer.allocUnsafe(260));
+        }).toThrow(Error);
+    });
 });
 
-describe("Basic seqAck", () => {
+describe("seqAck", () => {
     const input = Buffer.from("f902020302000005020902010203", "hex");
 
     const eseq = 761;
@@ -45,80 +76,8 @@ describe("Basic seqAck", () => {
 
         expect(output).toEqual(eoutput);
     });
-});
 
-describe("sessionId", () => {
-    const input = Buffer.from("f9010203", "hex");
-
-    const eSessionId = 505;
-    const erest = Buffer.from("0203", "hex");
-    test("decode", () => {
-        const [sessionId, rest] = decodeSessionId(input);
-        expect(sessionId).toEqual(eSessionId);
-        expect(rest).toEqual(erest);
-    });
-
-    test("encode", () => {
-        const output = encodeSessionId(eSessionId, erest);
-        expect(output).toEqual(input);
-    });
-});
-
-describe("Minimal message - seqAck", () => {
-    const input = Buffer.from("f90200", "hex");
-
-    const eseq = 761;
-    const eacks: Array<number> = [];
-    const erest = Buffer.allocUnsafe(0);
-
-    test("decode", () => {
-        const [seq, acks, rest] = decodeSeqAck(input);
-        expect(seq).toEqual(eseq);
-        expect(acks).toEqual(eacks);
-        expect(rest).toEqual(erest);
-    });
-
-    test("encode", () => {
-        const eoutput = Buffer.from("f90200", "hex");
-        const output = encodeSeqAck(eseq, eacks, erest);
-
-        expect(output).toEqual(eoutput);
-    });
-});
-
-describe("Test fail states", () => {
-    test("decodeClientId", () => {
-        expect(() => {
-            // @ts-ignore
-            decodeClientId(12);
-        }).toThrow(TypeError);
-
-        expect(() => {
-            decodeClientId(Buffer.allocUnsafe(1));
-        }).toThrow(Error);
-
-        expect(() => {
-            decodeClientId(Buffer.from([3, 0, 0]));
-        }).toThrow(Error);
-    });
-
-    test("encodeClientId", () => {
-        expect(() => {
-            // @ts-ignore
-            encodeClientId(12, Buffer.allocUnsafe(3));
-        }).toThrow(TypeError);
-
-        expect(() => {
-            // @ts-ignore
-            encodeClientId(Buffer.allocUnsafe(3), 12);
-        }).toThrow(TypeError);
-
-        expect(() => {
-            encodeClientId(Buffer.allocUnsafe(260));
-        }).toThrow(Error);
-    });
-
-    test("decodeSeqAck", () => {
+    test("decode - error", () => {
         expect(() => {
             // @ts-ignore
             decodeSeqAck(12);
@@ -140,7 +99,7 @@ describe("Test fail states", () => {
         }).toThrow(Error);
     });
 
-    test("encodeSeqAck", () => {
+    test("encode - error", () => {
         expect(() => {
             // @ts-ignore
             encodeSeqAck(12, [], 12);
@@ -167,8 +126,25 @@ describe("Test fail states", () => {
             encodeSeqAck(12, [2, 3, 4, 5, "6"]);
         }).toThrow(Error);
     });
+});
 
-    test("decodeSessionId", () => {
+describe("sessionId", () => {
+    const input = Buffer.from("f9010203", "hex");
+
+    const eSessionId = 505;
+    const erest = Buffer.from("0203", "hex");
+    test("decode", () => {
+        const [sessionId, rest] = decodeSessionId(input);
+        expect(sessionId).toEqual(eSessionId);
+        expect(rest).toEqual(erest);
+    });
+
+    test("encode", () => {
+        const output = encodeSessionId(eSessionId, erest);
+        expect(output).toEqual(input);
+    });
+
+    test("decode - error", () => {
         expect(() => {
             // @ts-ignore
             decodeSessionId(12);
@@ -179,7 +155,7 @@ describe("Test fail states", () => {
         }).toThrow(Error);
     });
 
-    test("encodeSessionId", () => {
+    test("encode - error", () => {
         expect(() => {
             // @ts-ignore
             encodeSessionId(12, 12);
@@ -197,5 +173,27 @@ describe("Test fail states", () => {
         expect(() => {
             encodeSessionId(70000);
         }).toThrow(Error);
+    });
+});
+
+describe("Minimal message - seqAck", () => {
+    const input = Buffer.from("f90200", "hex");
+
+    const eseq = 761;
+    const eacks: Array<number> = [];
+    const erest = Buffer.allocUnsafe(0);
+
+    test("decode", () => {
+        const [seq, acks, rest] = decodeSeqAck(input);
+        expect(seq).toEqual(eseq);
+        expect(acks).toEqual(eacks);
+        expect(rest).toEqual(erest);
+    });
+
+    test("encode", () => {
+        const eoutput = Buffer.from("f90200", "hex");
+        const output = encodeSeqAck(eseq, eacks, erest);
+
+        expect(output).toEqual(eoutput);
     });
 });
