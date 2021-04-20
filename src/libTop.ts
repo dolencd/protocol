@@ -2,6 +2,7 @@ import * as EventEmitter from "events";
 import { isEmpty } from "lodash";
 import { diff, addedDiff } from "deep-object-diff";
 import IdCreator from "./idCreator";
+import { encode as pbEncode, decode as pbDecode } from "./PbTranscoder";
 
 interface RpcReqObj {
     method: string;
@@ -25,11 +26,6 @@ interface ProtocolObject {
     code?: number;
     codes?: Array<number>;
     reason?: string;
-}
-
-interface Transcoder {
-    encode: (obj: Record<string, any>) => Buffer;
-    decode: (buf: Buffer) => Record<string, any>;
 }
 
 interface FnCall {
@@ -73,14 +69,10 @@ export default class LibTop extends EventEmitter {
 
     eventsOrdered: Array<Buffer>;
 
-    tc: Transcoder;
-
     idCreator: IdCreator;
 
-    constructor(tc: Transcoder) {
+    constructor() {
         super();
-        this.tc = tc;
-
         this.idCreator = new IdCreator(1, 65530);
 
         this.remoteObj = {};
@@ -150,7 +142,7 @@ export default class LibTop extends EventEmitter {
 
     receiveMessageOrdered(buf: Buffer): void {
         // console.log("top accept", binMsg.length)
-        const obj: ProtocolObject = this.tc.decode(buf);
+        const obj: ProtocolObject = pbDecode(buf);
 
         // console.log("top decoded", obj)
         if (obj.eventsOrdered)
@@ -167,7 +159,7 @@ export default class LibTop extends EventEmitter {
 
     receiveMessage(buf: Buffer): void {
         // console.log("top accept", binMsg.length)
-        const obj: ProtocolObject = this.tc.decode(buf);
+        const obj: ProtocolObject = pbDecode(buf);
 
         // console.log("top decoded", obj)
         if (obj.events)
@@ -286,7 +278,7 @@ export default class LibTop extends EventEmitter {
             eventsOrdered,
         };
         const cleanedObject = removeUndefinedAndEmpty(finishedObject);
-        const buf = this.tc.encode(cleanedObject);
+        const buf = pbEncode(cleanedObject);
         this.emit("send", buf);
         return buf;
     }

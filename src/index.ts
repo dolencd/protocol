@@ -1,6 +1,6 @@
 import { encodeSessionId, encodeSeqAck } from "./transcoder";
 import { Protocol, ProtocolOptions } from "./Protocol";
-import PbTranscoder from "./PbTranscoder";
+import { encode as pbEncode, decode as pbDecode } from "./PbTranscoder";
 
 export { Protocol, ProtocolOptions } from "./Protocol";
 export { decodeClientId, encodeClientId, decodeSessionId, encodeSessionId } from "./transcoder";
@@ -9,8 +9,6 @@ interface ErrorObject {
     code?: number;
     reason?: string;
 }
-
-const transcoder = new PbTranscoder("./protocol.proto", "main");
 
 /**
  * Create server
@@ -26,7 +24,7 @@ export async function createServer(
 ): Promise<[Protocol, Buffer, ErrorObject?]> {
     const errObj: ErrorObject = {};
     try {
-        const decodedObject = transcoder.decode(initialMessage);
+        const decodedObject = pbDecode(initialMessage);
 
         const authRes = authFn ? await authFn(decodedObject.auth) : true;
 
@@ -43,13 +41,9 @@ export async function createServer(
     if (errObj.code) {
         console.log("connection rejected");
         if (options.enableOrdering) {
-            return [null, encodeSeqAck(0, [], transcoder.encode(errObj)), errObj];
+            return [null, encodeSeqAck(0, [], pbEncode(errObj)), errObj];
         }
-        return [null, transcoder.encode(errObj), errObj];
-    }
-
-    if (!options.transcoder) {
-        options.transcoder = transcoder;
+        return [null, pbEncode(errObj), errObj];
     }
 
     // auth is OK
@@ -66,15 +60,11 @@ export async function createServer(
  * @returns [protocol, messageToSend, error]
  */
 export function createClient(options: ProtocolOptions, authMessage: Buffer): [Protocol, Buffer, ErrorObject?] {
-    if (!options.transcoder) {
-        options.transcoder = transcoder;
-    }
-
     return [
         new Protocol(options),
         encodeSessionId(
             0,
-            transcoder.encode({
+            pbEncode({
                 auth: authMessage || undefined,
             })
         ),

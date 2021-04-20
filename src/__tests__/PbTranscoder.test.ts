@@ -1,4 +1,4 @@
-import PbTranscoder from "../PbTranscoder";
+import { encode, decode } from "../PbTranscoder";
 
 describe("Full object", () => {
     const obj = {
@@ -43,11 +43,9 @@ describe("Full object", () => {
         reason: "asdf",
     };
 
-    const pbTranscoder = new PbTranscoder("./protocol.proto", "main");
-
     test("Decoded obj is the same as input obj", () => {
-        const encoded = pbTranscoder.encode(obj);
-        const decoded = pbTranscoder.decode(encoded);
+        const encoded = encode(obj);
+        const decoded = decode(encoded);
         expect(decoded).toEqual(obj);
     });
 });

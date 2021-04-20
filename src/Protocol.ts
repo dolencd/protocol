@@ -21,7 +21,7 @@ export class Protocol extends EventEmitter {
     constructor(options: ProtocolOptions) {
         super();
 
-        this.tp = new LibTop(options.transcoder);
+        this.tp = new LibTop();
 
         // tp event bindings
         ["call", "event", "objSync", "objDelete", "objChange"].map((eventName) => {
