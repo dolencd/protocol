@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-ignore */
 import {
     decodeClientId,
     encodeClientId,
@@ -82,5 +83,119 @@ describe("Minimal message - seqAck", () => {
         const output = encodeSeqAck(eseq, eacks, erest);
 
         expect(output).toEqual(eoutput);
+    });
+});
+
+describe("Test fail states", () => {
+    test("decodeClientId", () => {
+        expect(() => {
+            // @ts-ignore
+            decodeClientId(12);
+        }).toThrow(TypeError);
+
+        expect(() => {
+            decodeClientId(Buffer.allocUnsafe(1));
+        }).toThrow(Error);
+
+        expect(() => {
+            decodeClientId(Buffer.from([3, 0, 0]));
+        }).toThrow(Error);
+    });
+
+    test("encodeClientId", () => {
+        expect(() => {
+            // @ts-ignore
+            encodeClientId(12, Buffer.allocUnsafe(3));
+        }).toThrow(TypeError);
+
+        expect(() => {
+            // @ts-ignore
+            encodeClientId(Buffer.allocUnsafe(3), 12);
+        }).toThrow(TypeError);
+
+        expect(() => {
+            encodeClientId(Buffer.allocUnsafe(260));
+        }).toThrow(Error);
+    });
+
+    test("decodeSeqAck", () => {
+        expect(() => {
+            // @ts-ignore
+            decodeSeqAck(12);
+        }).toThrow(TypeError);
+
+        expect(() => {
+            // too short for seq and ackLen
+            decodeSeqAck(Buffer.allocUnsafe(2));
+        }).toThrow(Error);
+
+        expect(() => {
+            // too short for guben number of acks
+            decodeSeqAck(Buffer.from("0101020123".replace(" ", ""), "hex"));
+        }).toThrow(Error);
+
+        expect(() => {
+            // too short for ack range
+            decodeSeqAck(Buffer.from("01010201230000010202", "hex"));
+        }).toThrow(Error);
+    });
+
+    test("encodeSeqAck", () => {
+        expect(() => {
+            // @ts-ignore
+            encodeSeqAck(12, [], 12);
+        }).toThrow(TypeError);
+
+        expect(() => {
+            encodeSeqAck(10);
+        }).not.toThrow();
+
+        expect(() => {
+            encodeSeqAck(12, Array(260));
+        }).toThrow(Error);
+
+        expect(() => {
+            encodeSeqAck(12, [2, 3, 4, 5, -1], Buffer.allocUnsafe(12));
+        }).toThrow(Error);
+
+        expect(() => {
+            encodeSeqAck(12, [2, 3, 4, 5, 70000]);
+        }).toThrow(Error);
+
+        expect(() => {
+            // @ts-ignore
+            encodeSeqAck(12, [2, 3, 4, 5, "6"]);
+        }).toThrow(Error);
+    });
+
+    test("decodeSessionId", () => {
+        expect(() => {
+            // @ts-ignore
+            decodeSessionId(12);
+        }).toThrow(TypeError);
+
+        expect(() => {
+            decodeSessionId(Buffer.allocUnsafe(1));
+        }).toThrow(Error);
+    });
+
+    test("encodeSessionId", () => {
+        expect(() => {
+            // @ts-ignore
+            encodeSessionId(12, 12);
+        }).toThrow(TypeError);
+
+        expect(() => {
+            // @ts-ignore
+            encodeSessionId("234");
+        }).toThrow(Error);
+
+        expect(() => {
+            encodeSessionId(-1);
+        }).toThrow(Error);
+
+        expect(() => {
+            encodeSessionId(70000);
+        }).toThrow(Error);
     });
 });

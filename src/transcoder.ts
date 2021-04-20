@@ -3,7 +3,7 @@ const SES_LEN = 2;
 
 export function decodeClientId(buf: Buffer): [Buffer, Buffer] {
     if (!Buffer.isBuffer(buf)) {
-        throw new Error("Input should be Buffer");
+        throw new TypeError("Input should be Buffer");
     }
     if (buf.length < 2) {
         throw new Error("buffer too short");
@@ -17,7 +17,7 @@ export function decodeClientId(buf: Buffer): [Buffer, Buffer] {
 
 export function encodeClientId(clientId: Buffer, rest = Buffer.from("")): Buffer {
     if (!Buffer.isBuffer(clientId) || !Buffer.isBuffer(rest)) {
-        throw new Error("Input should be Buffer");
+        throw new TypeError("Input should be Buffer");
     }
     if (clientId.length > 255) {
         throw new Error(`clientId too large${clientId}`);
@@ -27,7 +27,7 @@ export function encodeClientId(clientId: Buffer, rest = Buffer.from("")): Buffer
 
 export function decodeSeqAck(buf: Buffer): [number, Array<number>, Buffer] {
     if (!Buffer.isBuffer(buf)) {
-        throw new Error("Input should be Buffer");
+        throw new TypeError("Input should be Buffer");
     }
 
     let requiredLengthMin = SEQ_LEN + 1;
@@ -73,7 +73,7 @@ export function decodeSeqAck(buf: Buffer): [number, Array<number>, Buffer] {
 
 export function encodeSeqAck(seq: number, acks: Array<number> = [], rest: Buffer = Buffer.alloc(0)): Buffer {
     if (!Buffer.isBuffer(rest)) {
-        throw new Error("Input should be Buffer");
+        throw new TypeError("Input should be Buffer");
     }
     if (acks.length > 255) {
         throw new Error("seq too high");
@@ -97,7 +97,7 @@ export function encodeSeqAck(seq: number, acks: Array<number> = [], rest: Buffer
 
 export function decodeSessionId(buf: Buffer): [number, Buffer] {
     if (!Buffer.isBuffer(buf)) {
-        throw new Error("Input should be Buffer");
+        throw new TypeError("Input should be Buffer");
     }
     if (buf.length < SES_LEN) {
         throw new Error("Buffer too short");
@@ -107,7 +107,7 @@ export function decodeSessionId(buf: Buffer): [number, Buffer] {
 
 export function encodeSessionId(sessionId: number, rest = Buffer.from("")): Buffer {
     if (!Buffer.isBuffer(rest)) {
-        throw new Error("Input should be Buffer");
+        throw new TypeError("Input should be Buffer");
     }
     if (!Number.isInteger(sessionId) || sessionId > 65535 || sessionId < 0) {
         throw new Error("SessionId must be in [1, 65535]");
