@@ -1,5 +1,4 @@
 node_modules
-dist
 npm-debug.log
 coverage
 yarn-error.log
@@ -9,4 +8,3 @@ coverage
 .pnp.js
 .yarn
 .vscode
-docs
