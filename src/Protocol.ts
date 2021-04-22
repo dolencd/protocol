@@ -1,22 +1,33 @@
 import { EventEmitter } from "events";
-import LibBot from "./libBot";
+import LibBot, { LibBotOptions } from "./libBot";
 import LibTop from "./libTop";
 
-export interface ProtocolOptions {
+export interface ProtocolOptions extends LibBotOptions {
+    /**
+     * Adds support for unreliable connections. Guarantees message delivery and order.
+     * Enable if the underlying communications protocol does not provide these guarantees.
+     */
     enableOrdering?: boolean;
-    protoPath?: string;
-    transcoder?: Transcoder;
 }
 
 export interface Transcoder {
+    /**
+     * Takes a plain JS Object and encodes it into a Buffer. Must be the inverse of `decode`.
+     * @param obj Input Object
+     */
     encode(obj: Record<string, any>): Buffer;
-    decode(bud: Buffer): Record<string, any>;
+
+    /**
+     * Decodes a given Buffer into a JS Object. Must be the inverse of `encode`.
+     * @param buf Input Buffer
+     */
+    decode(buf: Buffer): Record<string, any>;
 }
 
 export class Protocol extends EventEmitter {
     tp: LibTop;
 
-    bt?: LibBot;
+    private bt?: LibBot;
 
     constructor(options: ProtocolOptions) {
         super();
