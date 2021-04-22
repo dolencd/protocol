@@ -105,7 +105,7 @@ export function decodeSessionId(buf: Buffer): [number, Buffer] {
     return [buf.readUInt16LE(0), buf.slice(SES_LEN)];
 }
 
-export function encodeSessionId(sessionId: number, rest = Buffer.from("")): Buffer {
+export function encodeSessionId(sessionId: number, rest = Buffer.allocUnsafe(0)): Buffer {
     if (!Buffer.isBuffer(rest)) {
         throw new TypeError("Input should be Buffer");
     }
