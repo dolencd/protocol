@@ -1,4 +1,4 @@
-import { loadSync as pbLoadSync, Type as pbType } from "protobufjs";
+import { loadSync as pbLoadSync } from "protobufjs";
 
 const type = pbLoadSync("./protocol.proto").lookupType("main");
 
