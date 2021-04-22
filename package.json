@@ -33,9 +33,11 @@
     "eslint-plugin-react": "^7.20.0",
     "eslint-plugin-typescript": "^0.14.0",
     "jest": "^26.0.1",
+    "jsdoc": "^3.6.6",
     "prettier": "^2.0.5",
     "ts-jest": "^26.0.0",
     "ts-node": "^9.1.1",
+    "typedoc": "^0.20.35",
     "typescript": "^3.9.3",
     "typescript-eslint-parser": "^22.0.0"
   },
