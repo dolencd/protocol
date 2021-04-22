@@ -7,4 +7,5 @@ coverage
 .yarnrc.yaml
 .pnp.js
 .yarn
-.vscode
+**/.vscode/
+dist
