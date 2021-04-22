@@ -1,0 +1,187 @@
+<!doctype html>
+<html class="default no-js">
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>typescript-module-boilerplate</title>
+	<meta name="description" content="Documentation for typescript-module-boilerplate">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="assets/css/main.css">
+	<script async src="assets/js/search.js" id="search-script"></script>
+</head>
+<body>
+<header>
+	<div class="tsd-page-toolbar">
+		<div class="container">
+			<div class="table-wrap">
+				<div class="table-cell" id="tsd-search" data-index="assets/js/search.json" data-base=".">
+					<div class="field">
+						<label for="tsd-search-field" class="tsd-widget search no-caption">Search</label>
+						<input id="tsd-search-field" type="text" />
+					</div>
+					<ul class="results">
+						<li class="state loading">Preparing search index...</li>
+						<li class="state failure">The search index is not available</li>
+					</ul>
+					<a href="index.html" class="title">typescript-module-boilerplate</a>
+				</div>
+				<div class="table-cell" id="tsd-widgets">
+					<div id="tsd-filter">
+						<a href="#" class="tsd-widget options no-caption" data-toggle="options">Options</a>
+						<div class="tsd-filter-group">
+							<div class="tsd-select" id="tsd-filter-visibility">
+								<span class="tsd-select-label">All</span>
+								<ul class="tsd-select-list">
+									<li data-value="public">Public</li>
+									<li data-value="protected">Public/Protected</li>
+									<li data-value="private" class="selected">All</li>
+								</ul>
+							</div>
+							<input type="checkbox" id="tsd-filter-inherited" checked />
+							<label class="tsd-widget" for="tsd-filter-inherited">Inherited</label>
+							<input type="checkbox" id="tsd-filter-externals" checked />
+							<label class="tsd-widget" for="tsd-filter-externals">Externals</label>
+						</div>
+					</div>
+					<a href="#" class="tsd-widget menu no-caption" data-toggle="menu">Menu</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="tsd-page-title">
+		<div class="container">
+			<h1>typescript-module-boilerplate</h1>
+		</div>
+	</div>
+</header>
+<div class="container container-main">
+	<div class="row">
+		<div class="col-8 col-content">
+			<div class="tsd-panel tsd-typography">
+				<a href="#typescript-module-boilerplate" id="typescript-module-boilerplate" style="color: inherit; text-decoration: none;">
+					<h1>typescript-module-boilerplate</h1>
+				</a>
+				<p>This is a boilerplate module for a project that uses TypeScript as its main language. To use this boilerplate, clone, delete <code>.git</code> folder and begin your own. Maybe delete a few other extra files as necessary.</p>
+				<a href="#stack-description" id="stack-description" style="color: inherit; text-decoration: none;">
+					<h2>Stack Description</h2>
+				</a>
+				<ul>
+					<li>TypeScript</li>
+					<li>Jest</li>
+					<li>Prettier</li>
+					<li>ESLint</li>
+				</ul>
+				<a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
+					<h2>Usage</h2>
+				</a>
+				<pre><code class="language-bash"><span style="color: #000000">$ git clone https://github.com/alexgorbatchev/typescript-module-boilerplate.git</span>
+<span style="color: #000000">$ </span><span style="color: #795E26">cd</span><span style="color: #000000"> typescript-module-boilerplate</span>
+<span style="color: #000000">$ rm -fr .git</span>
+<span style="color: #000000">$ yarn</span>
+<span style="color: #000000">$ yarn </span><span style="color: #795E26">test</span>
+</code></pre>
+				<a href="#features" id="features" style="color: inherit; text-decoration: none;">
+					<h2>Features</h2>
+				</a>
+				<p><img src="./screenshot-eslint.png" alt=""></p>
+				<ul>
+					<li>Linting via <a href="http://eslint.org/">ESLint</a>.<ul>
+							<li>Run manually via <code>yarn lint</code>.</li>
+							<li>Integrates with Visual Studio Code via <a href="https://github.com/Microsoft/vscode-eslint/">vscode-eslint</a>.<ul>
+									<li>Highlights type &amp; linting issues.</li>
+									<li>Provides debuging options for running Jest tests (once and in watch mode).</li>
+								</ul>
+							</li>
+							<li>Uses <a href="https://github.com/airbnb/javascript">AirBNB ESLint plugin</a> as sane defaults.</li>
+							<li><code>import ... from ...</code> statements are verified for correctness via <a href="https://github.com/benmosher/eslint-plugin-import">eslint-plugin-import</a>.</li>
+						</ul>
+					</li>
+					<li>Formatting via <a href="https://github.com/prettier/prettier">Prettier</a>.<ul>
+							<li>Run manually via <code>yarn format</code>.</li>
+							<li>Integrates well with Visual Studio Code via <a href="https://github.com/prettier/prettier-vscode">prettier-vscode</a>.<ul>
+									<li>Automatically formats on save.</li>
+								</ul>
+							</li>
+						</ul>
+					</li>
+				</ul>
+				<a href="#script-commands" id="script-commands" style="color: inherit; text-decoration: none;">
+					<h2>Script Commands</h2>
+				</a>
+				<ul>
+					<li><code>yarn test</code> -- Runs tests.</li>
+					<li><code>yarn typecheck</code> -- Checks TypeScript types for correctness. This is disabled during tests for performance reasons.</li>
+					<li><code>yarn lint</code> -- Runs linting.</li>
+					<li><code>yarn format</code> -- Reformats all of the <code>.ts</code> and <code>.tsx</code> files with Prettier.</li>
+					<li><code>yarn build</code> -- Regenerates <code>dist</code> folder that gets included into NPM module.</li>
+				</ul>
+				<a href="#license" id="license" style="color: inherit; text-decoration: none;">
+					<h2>License</h2>
+				</a>
+				<p>MIT</p>
+			</div>
+		</div>
+		<div class="col-4 col-menu menu-sticky-wrap menu-highlight">
+			<nav class="tsd-navigation primary">
+				<ul>
+					<li class=" ">
+						<a href="modules.html">Exports</a>
+					</li>
+				</ul>
+			</nav>
+			<nav class="tsd-navigation secondary menu-sticky">
+				<ul class="before-current">
+					<li class=" tsd-kind-class">
+						<a href="classes/protocol.html" class="tsd-kind-icon">Protocol</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="interfaces/protocoloptions.html" class="tsd-kind-icon">Protocol<wbr>Options</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#createclient" class="tsd-kind-icon">create<wbr>Client</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#createserver" class="tsd-kind-icon">create<wbr>Server</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#decodeclientid" class="tsd-kind-icon">decode<wbr>Client<wbr>Id</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#decodesessionid" class="tsd-kind-icon">decode<wbr>Session<wbr>Id</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#encodeclientid" class="tsd-kind-icon">encode<wbr>Client<wbr>Id</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="modules.html#encodesessionid" class="tsd-kind-icon">encode<wbr>Session<wbr>Id</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</div>
+</div>
+<footer class="with-border-bottom">
+	<div class="container">
+		<h2>Legend</h2>
+		<div class="tsd-legend-group">
+			<ul class="tsd-legend">
+				<li class="tsd-kind-constructor tsd-parent-kind-class"><span class="tsd-kind-icon">Constructor</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+			</ul>
+		</div>
+	</div>
+</footer>
+<div class="container tsd-generator">
+	<p>Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p>
+</div>
+<div class="overlay"></div>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
