@@ -1,48 +1,24 @@
-# typescript-module-boilerplate
+# Low bandwidth Application Protocol
 
-This is a boilerplate module for a project that uses TypeScript as its main language. To use this boilerplate, clone, delete `.git` folder and begin your own. Maybe delete a few other extra files as necessary.
+The Low bandwidth application protocol is designed to allow two applications to communicate via application level calls over unreliable networks with as the smallest number and size of messages possible.
 
-## Stack Description
+## Architecture
 
-* TypeScript
-* Jest
-* Prettier
-* ESLint
+### Top Protocol
 
-## Usage
+The top later protocol handles application payloads directly. It tracks data that is set to be transmitted and, when the time comes, sends it in an efficient format.
 
-```bash
-$ git clone https://github.com/alexgorbatchev/typescript-module-boilerplate.git
-$ cd typescript-module-boilerplate
-$ rm -fr .git
-$ yarn
-$ yarn test
-```
+It requires that all messages are delivered correctly and in order.
 
-## Features
+### Bottom Protocol
 
-![](./screenshot-eslint.png)
+The bottom protocol is used when the underlying communications protocol does not meet the requirements of the top protocol. It provides guarantees in message delivery and ordering.
 
-* Linting via [ESLint](http://eslint.org/).
-  * Run manually via `yarn lint`.
-  * Integrates with Visual Studio Code via [vscode-eslint](https://github.com/Microsoft/vscode-eslint/).
-    * Highlights type & linting issues.
-    * Provides debuging options for running Jest tests (once and in watch mode).
-  * Uses [AirBNB ESLint plugin](https://github.com/airbnb/javascript) as sane defaults.
-  * `import ... from ...` statements are verified for correctness via [eslint-plugin-import](https://github.com/benmosher/eslint-plugin-import).
-* Formatting via [Prettier](https://github.com/prettier/prettier).
-  * Run manually via `yarn format`.
-  * Integrates well with Visual Studio Code via [prettier-vscode](https://github.com/prettier/prettier-vscode).
-    * Automatically formats on save.
+By default all protocol messages are bundled with application payloads, bringing maximum efficiency. There are options that speed up failure detection and message retransmission at the expense increased message size and number.
 
-## Script Commands
-
-* `yarn test` -- Runs tests.
-* `yarn typecheck` -- Checks TypeScript types for correctness. This is disabled during tests for performance reasons.
-* `yarn lint` -- Runs linting.
-* `yarn format` -- Reformats all of the `.ts` and `.tsx` files with Prettier.
-* `yarn build` -- Regenerates `dist` folder that gets included into NPM module.
-
-## License
-
-MIT
+## TODO
+ * Add Object sync and delete handling
+ * Handle sequence number looping
+ * Dinamically set up object proto
+ * Provide functions to simplify initial message retransmission
+ * Add optional CRC to bottom protocol

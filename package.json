@@ -1,6 +1,12 @@
 {
-  "name": "typescript-module-boilerplate",
-  "version": "2.0.0",
+  "name": "lap-protocol",
+  "version": "0.1.0",
+  "description": "The Low bandwidth Application Protocol simplifies the communication of applications connected by low bandwidth links.",
+  "keywords": [
+    "IoT",
+    "Low Bandwidth",
+    "Communication Protocol"
+  ],
   "scripts": {
     "test": "yarn jest --detectOpenHandles",
     "docs": "typedoc ./src/index.ts",
@@ -8,7 +14,7 @@
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "build": "./scripts/build.sh",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "yarn build"
   },
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
