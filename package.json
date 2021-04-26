@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "scripts": {
     "test": "yarn jest --detectOpenHandles",
+    "docs": "typedoc ./src/index.ts",
     "typecheck": "yarn tsc --project ./tsconfig-typecheck.json",
     "lint": "eslint 'src/**/*.{ts,tsx}'",
     "format": "prettier --write 'src/**/*.{ts,tsx}'",

@@ -8,3 +8,4 @@ coverage
 .pnp.js
 .yarn
 **/.vscode/
+dist

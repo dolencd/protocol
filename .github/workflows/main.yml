@@ -35,3 +35,7 @@ jobs:
         
       - name: Test and build
         run: yarn build
+      
+      - name: Generate docs
+        run: yarn docs
+
