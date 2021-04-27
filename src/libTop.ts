@@ -1,4 +1,4 @@
-import * as EventEmitter from "events";
+import { EventEmitter } from "events";
 import { isEmpty } from "lodash";
 import { diff, addedDiff } from "deep-object-diff";
 import IdCreator from "./idCreator";

@@ -1,6 +1,7 @@
 import { loadSync as pbLoadSync } from "protobufjs";
+import { join } from "path";
 
-const type = pbLoadSync("./protocol.proto").lookupType("main");
+const type = pbLoadSync(join(__dirname, "../protocol.proto")).lookupType("main");
 
 export function decode(buf: Buffer) {
     const msg = type.decode(buf);

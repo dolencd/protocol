@@ -2,16 +2,17 @@
   "compilerOptions": {
     "outDir": "dist/",
     "sourceMap": true,
-    "module": "ES2020",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "noEmitOnError": true,
-    "target": "es6",
+    "target": "ES6",
     "declaration": true,
     "removeComments": false,
     "noImplicitAny": true,
     "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": true,
     "pretty": true,
+    "strict": false,
     "lib":[
       "ES2020"
     ]
@@ -20,3 +21,25 @@
     "src"
   ]
 }
+
+// {
+//   "compilerOptions": {
+//     "target": "ES5",
+//     "module": "commonjs",
+//     "declaration": true,
+//     "outDir": "./dist",
+//     "strict": false,
+//     "esModuleInterop": true,
+//     "removeComments": true,
+//     "allowJs": true,
+//     "lib": [
+//       "ES2020"
+//     ]
+//   },
+//   "include": [
+//     "./src"
+//   ],
+//   "exclude": [
+//     "node_modules"
+//   ]
+// }
