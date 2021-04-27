@@ -93,18 +93,18 @@
 					<a name="createclient" class="tsd-anchor"></a>
 					<h3>create<wbr>Client</h3>
 					<ul class="tsd-signatures tsd-kind-function">
-						<li class="tsd-signature tsd-kind-icon">create<wbr>Client<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">: </span><a href="interfaces/protocoloptions.html" class="tsd-signature-type" data-tsd-kind="Interface">ProtocolOptions</a>, authMessage<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><a href="classes/protocol.html" class="tsd-signature-type" data-tsd-kind="Class">Protocol</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">ErrorObject</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">]</span></li>
+						<li class="tsd-signature tsd-kind-icon">create<wbr>Client<span class="tsd-signature-symbol">(</span>options<span class="tsd-signature-symbol">: </span><a href="interfaces/protocoloptions.html" class="tsd-signature-type" data-tsd-kind="Interface">ProtocolOptions</a>, authMessage<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><a href="classes/protocol.html" class="tsd-signature-type" data-tsd-kind="Class">Protocol</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">ErrorObject</span><span class="tsd-signature-symbol">?</span><span class="tsd-signature-symbol">]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/081ad4c/src/index.ts#L62">src/index.ts:62</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/1e571df/src/index.ts#L62">src/index.ts:62</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Create a new client</p>
+									<p>Prepare a new client instance</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -116,9 +116,9 @@
 									</div>
 								</li>
 								<li>
-									<h5>authMessage: <span class="tsd-signature-type">Buffer</span></h5>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> authMessage: <span class="tsd-signature-type">Buffer</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>Buffer containing authentication information</p>
+										<p>Buffer containing authentication information. If present, it will be passed to the authentication function on the server.</p>
 									</div>
 								</li>
 							</ul>
@@ -136,12 +136,12 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/081ad4c/src/index.ts#L20">src/index.ts:20</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/1e571df/src/index.ts#L20">src/index.ts:20</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
 								<div class="lead">
-									<p>Create server</p>
+									<p>Create a new server instance. Each instance communicates with 1 client.</p>
 								</div>
 							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -149,7 +149,7 @@
 								<li>
 									<h5>options: <a href="interfaces/protocoloptions.html" class="tsd-signature-type" data-tsd-kind="Interface">ProtocolOptions</a></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>Options to use. See ProtocolOptions</p>
+										<p>Options to use. See ProtocolOptions.</p>
 									</div>
 								</li>
 								<li>
@@ -161,7 +161,7 @@
 								<li>
 									<h5><span class="tsd-flag ts-flagOptional">Optional</span> authFn: <span class="tsd-signature-symbol">(</span>authBuf<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol"> =&gt; </span><span class="tsd-signature-type">true</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-symbol">{ </span>code<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">; </span>reason<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span></h5>
 									<div class="tsd-comment tsd-typography">
-										<p>Function to test if client should be allowed to connect</p>
+										<p>Gets the authentication message that was passed to createClient. If it returns true the connection is accepted. Can return an instance of ErrorObject to provide the client a reason for tha failure. If not present, all connections are accepted.</p>
 									</div>
 									<ul class="tsd-parameters">
 										<li class="tsd-parameter-signature">
@@ -197,16 +197,26 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/081ad4c/src/transcoder.ts#L4">src/transcoder.ts:4</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/1e571df/src/transcoder.ts#L10">src/transcoder.ts:10</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Decodes ClientId.
+									Expects message in format: <code>&lt;1B length&gt;&lt;Id of given length&gt;&lt;Other data&gt;</code></p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>buf: <span class="tsd-signature-type">Buffer</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Input message</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">]</span></h4>
+							<p>First is the Id, then the other data.</p>
 						</li>
 					</ul>
 				</section>
@@ -220,16 +230,25 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/081ad4c/src/transcoder.ts#L98">src/transcoder.ts:98</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/1e571df/src/transcoder.ts#L128">src/transcoder.ts:128</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Decode SessionId from Buffer. Reads the first 2B as UInt16 using Little Endian.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>buf: <span class="tsd-signature-type">Buffer</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Input Buffer</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">]</span></h4>
+							<p>The decoded SessionId and the remaining message.</p>
 						</li>
 					</ul>
 				</section>
@@ -243,19 +262,32 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/081ad4c/src/transcoder.ts#L18">src/transcoder.ts:18</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/1e571df/src/transcoder.ts#L31">src/transcoder.ts:31</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Encodes ClientId.
+									Creates the following format: <code>&lt;1B length&gt;&lt;Id of given length&gt;&lt;Other data&gt;</code></p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>clientId: <span class="tsd-signature-type">Buffer</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Client Id in the form of a Buffer. Cannot be longer than 255B.</p>
+									</div>
 								</li>
 								<li>
 									<h5>rest: <span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol"> = ...</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Remaining data to encode</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Buffer</span></h4>
+							<p>The encoded Buffer</p>
 						</li>
 					</ul>
 				</section>
@@ -269,19 +301,31 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/081ad4c/src/transcoder.ts#L108">src/transcoder.ts:108</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/1e571df/src/transcoder.ts#L144">src/transcoder.ts:144</a></li>
 								</ul>
 							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Encodes SessionId together with the remaining Buffer. Writes UInt16 using Little Endian.</p>
+								</div>
+							</div>
 							<h4 class="tsd-parameters-title">Parameters</h4>
 							<ul class="tsd-parameters">
 								<li>
 									<h5>sessionId: <span class="tsd-signature-type">number</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>The SessionId to write. Must be in [0, 65535].</p>
+									</div>
 								</li>
 								<li>
 									<h5>rest: <span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol"> = ...</span></h5>
+									<div class="tsd-comment tsd-typography">
+										<p>Remaining message to encode</p>
+									</div>
 								</li>
 							</ul>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Buffer</span></h4>
+							<p>Encoded message.</p>
 						</li>
 					</ul>
 				</section>

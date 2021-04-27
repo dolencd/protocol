@@ -1,6 +1,12 @@
 const SEQ_LEN = 2;
 const SES_LEN = 2;
 
+/**
+ * Decodes ClientId.
+ * Expects message in format: `<1B length><Id of given length><Other data>`
+ * @param buf {Buffer} Input message
+ * @returns {[Buffer, Buffer]} First is the Id, then the other data.
+ */
 export function decodeClientId(buf: Buffer): [Buffer, Buffer] {
     if (!Buffer.isBuffer(buf)) {
         throw new TypeError("Input should be Buffer");
@@ -15,6 +21,13 @@ export function decodeClientId(buf: Buffer): [Buffer, Buffer] {
     return [buf.slice(1, 1 + l), buf.slice(1 + l)];
 }
 
+/**
+ * Encodes ClientId.
+ * Creates the following format: `<1B length><Id of given length><Other data>`
+ * @param clientId {Buffer} Client Id in the form of a Buffer. Cannot be longer than 255B.
+ * @param rest {Buffer} Remaining data to encode
+ * @returns {Buffer} The encoded Buffer
+ */
 export function encodeClientId(clientId: Buffer, rest = Buffer.from("")): Buffer {
     if (!Buffer.isBuffer(clientId) || !Buffer.isBuffer(rest)) {
         throw new TypeError("Input should be Buffer");
@@ -25,6 +38,11 @@ export function encodeClientId(clientId: Buffer, rest = Buffer.from("")): Buffer
     return Buffer.concat([Buffer.from([clientId.length]), clientId, rest]);
 }
 
+/**
+ * Decode sequence number and acknowledgement numbers from the provided Buffer. Expects numbers to be encoded in Little Endian.
+ * @param buf {Buffer} Buffer to decode.
+ * @returns {[number, Array<number>, Buffer]} The sequence number, acknowledgement numbers and remaining message.
+ */
 export function decodeSeqAck(buf: Buffer): [number, Array<number>, Buffer] {
     if (!Buffer.isBuffer(buf)) {
         throw new TypeError("Input should be Buffer");
@@ -71,6 +89,13 @@ export function decodeSeqAck(buf: Buffer): [number, Array<number>, Buffer] {
     return [seq, acks, buf.slice(offset)];
 }
 
+/**
+ * Encode sequence number and acknowledgement numbers together with the remaining Buffer. Numbers are encoded with Little Endian.
+ * @param seq {number} Sequence number. Must be in [0, 65535].
+ * @param acks {Array<number>} Array of acknowledgements. Each acknowledgement must be in [0, 65535].
+ * @param rest {Buffer} Remaining message
+ * @returns {Buffer} The encoded message
+ */
 export function encodeSeqAck(seq: number, acks: Array<number> = [], rest: Buffer = Buffer.alloc(0)): Buffer {
     if (!Buffer.isBuffer(rest)) {
         throw new TypeError("Input should be Buffer");
@@ -95,6 +120,11 @@ export function encodeSeqAck(seq: number, acks: Array<number> = [], rest: Buffer
     return Buffer.concat([output, acksBuf, rest]);
 }
 
+/**
+ * Decode SessionId from Buffer. Reads the first 2B as UInt16 using Little Endian.
+ * @param buf {Buffer} Input Buffer
+ * @returns {[number, Buffer]} The decoded SessionId and the remaining message.
+ */
 export function decodeSessionId(buf: Buffer): [number, Buffer] {
     if (!Buffer.isBuffer(buf)) {
         throw new TypeError("Input should be Buffer");
@@ -105,6 +135,12 @@ export function decodeSessionId(buf: Buffer): [number, Buffer] {
     return [buf.readUInt16LE(0), buf.slice(SES_LEN)];
 }
 
+/**
+ * Encodes SessionId together with the remaining Buffer. Writes UInt16 using Little Endian.
+ * @param sessionId {number} The SessionId to write. Must be in [0, 65535].
+ * @param rest {Buffer} Remaining message to encode
+ * @returns {Buffer} Encoded message.
+ */
 export function encodeSessionId(sessionId: number, rest = Buffer.allocUnsafe(0)): Buffer {
     if (!Buffer.isBuffer(rest)) {
         throw new TypeError("Input should be Buffer");

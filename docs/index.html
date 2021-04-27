@@ -65,22 +65,20 @@
 				<a href="#usage-steps" id="usage-steps" style="color: inherit; text-decoration: none;">
 					<h2>Usage steps</h2>
 				</a>
-				<a href="#client" id="client" style="color: inherit; text-decoration: none;">
-					<h3>Client</h3>
+				<pre><code><span style="color: #001080">Client</span>
+<span style="color: #098658">1.</span><span style="color: #000000"> </span><span style="color: #001080">Call</span><span style="color: #000000"> </span><span style="color: #001080">createClient</span>
+<span style="color: #098658">2.</span><span style="color: #000000"> </span><span style="color: #001080">Pass</span><span style="color: #000000"> </span><span style="color: #001080">message</span><span style="color: #000000"> </span><span style="color: #001080">to</span><span style="color: #000000"> </span><span style="color: #001080">server</span>
+<span style="color: #098658">6.</span><span style="color: #000000"> </span><span style="color: #001080">Forward</span><span style="color: #000000"> </span><span style="color: #001080">message</span><span style="color: #000000"> </span><span style="color: #001080">from</span><span style="color: #000000"> </span><span style="color: #001080">the</span><span style="color: #000000"> </span><span style="color: #001080">server</span><span style="color: #000000"> </span><span style="color: #001080">to</span><span style="color: #000000"> </span><span style="color: #001080">the</span><span style="color: #000000"> </span><span style="color: #001080">instance</span><span style="color: #000000"> </span><span style="color: #0000FF">of</span><span style="color: #000000"> </span><span style="color: #001080">Protocol</span><span style="color: #000000"> </span><span style="color: #001080">obtained</span><span style="color: #000000"> </span><span style="color: #0000FF">in</span><span style="color: #000000"> </span><span style="color: #001080">step</span><span style="color: #000000"> </span><span style="color: #098658">1</span>
+
+<span style="color: #001080">Server</span>
+<span style="color: #098658">3.</span><span style="color: #000000"> </span><span style="color: #001080">Receive</span><span style="color: #000000"> </span><span style="color: #001080">message</span><span style="color: #000000"> </span><span style="color: #001080">from</span><span style="color: #000000"> </span><span style="color: #001080">client</span>
+<span style="color: #098658">4.</span><span style="color: #000000"> </span><span style="color: #001080">Call</span><span style="color: #000000"> </span><span style="color: #001080">createServer</span>
+<span style="color: #098658">5.</span><span style="color: #000000"> </span><span style="color: #001080">Pass</span><span style="color: #000000"> </span><span style="color: #001080">message</span><span style="color: #000000"> </span><span style="color: #001080">to</span><span style="color: #000000"> </span><span style="color: #001080">client</span>
+</code></pre>
+				<a href="#documentation" id="documentation" style="color: inherit; text-decoration: none;">
+					<h3>Documentation</h3>
 				</a>
-				<ol>
-					<li>Call createClient</li>
-					<li>Pass message to server</li>
-					<li>Forward message from the server to the instance of Protocol obtained in step 1</li>
-				</ol>
-				<a href="#server" id="server" style="color: inherit; text-decoration: none;">
-					<h3>Server</h3>
-				</a>
-				<ol start="3">
-					<li>Receive message from client</li>
-					<li>Call createServer</li>
-					<li>Pass message to client</li>
-				</ol>
+				<p>Reference documentation is available at <a href="https://dolencd.github.io/protocol/">https://dolencd.github.io/protocol/</a>.</p>
 				<a href="#usage-notes" id="usage-notes" style="color: inherit; text-decoration: none;">
 					<h2>Usage notes</h2>
 				</a>

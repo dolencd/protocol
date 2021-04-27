@@ -4,17 +4,19 @@ The Low bandwidth application protocol is designed to allow two applications to 
 
 ## Usage steps
 
-### Client
+    Client
+    1. Call createClient
+    2. Pass message to server
+    6. Forward message from the server to the instance of Protocol obtained in step 1
 
-1. Call createClient
-2. Pass message to server
-6. Forward message from the server to the instance of Protocol obtained in step 1
+    Server
+    3. Receive message from client
+    4. Call createServer
+    5. Pass message to client
 
-### Server
+### Documentation
 
-3. Receive message from client
-4. Call createServer
-5. Pass message to client
+Reference documentation is available at https://dolencd.github.io/protocol/.
 
 ## Usage notes
 

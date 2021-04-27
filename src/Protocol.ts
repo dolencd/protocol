@@ -29,6 +29,10 @@ export class Protocol extends EventEmitter {
 
     private bt?: LibBot;
 
+    /**
+     * Initialise the Protocol class. It is not recommended to use this directly.
+     * @param options {ProtocolOptions}
+     */
     constructor(options: ProtocolOptions) {
         super();
 
