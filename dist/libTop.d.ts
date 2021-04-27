@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import * as EventEmitter from "events";
+import { EventEmitter } from "events";
 import IdCreator from "./idCreator";
 interface RpcResObj {
     returns?: Buffer;

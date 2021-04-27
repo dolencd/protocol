@@ -1,8 +1,10 @@
-import * as EventEmitter from "events";
-import { isEmpty } from "lodash";
-import { diff, addedDiff } from "deep-object-diff";
-import IdCreator from "./idCreator";
-import { encode as pbEncode, decode as pbDecode } from "./PbTranscoder";
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const events_1 = require("events");
+const lodash_1 = require("lodash");
+const deep_object_diff_1 = require("deep-object-diff");
+const idCreator_1 = require("./idCreator");
+const PbTranscoder_1 = require("./PbTranscoder");
 function removeUndefinedAndEmpty(o) {
     Object.keys(o).map((k) => {
         if (o[k] === undefined || o[k] === null) {
@@ -10,17 +12,17 @@ function removeUndefinedAndEmpty(o) {
         }
         if (typeof o[k] === "object") {
             removeUndefinedAndEmpty(o[k]);
-            if (isEmpty(o[k])) {
+            if (lodash_1.isEmpty(o[k])) {
                 delete o[k];
             }
         }
     });
     return o;
 }
-export default class LibTop extends EventEmitter {
+class LibTop extends events_1.EventEmitter {
     constructor() {
         super();
-        this.idCreator = new IdCreator(1, 65530);
+        this.idCreator = new idCreator_1.default(1, 65530);
         this.remoteObj = {};
         this.obj = {};
         this.responses = new Map();
@@ -71,7 +73,7 @@ export default class LibTop extends EventEmitter {
     }
     receiveMessageOrdered(buf) {
         // console.log("top accept", binMsg.length)
-        const obj = pbDecode(buf);
+        const obj = PbTranscoder_1.decode(buf);
         // console.log("top decoded", obj)
         if (obj.eventsOrdered)
             obj.eventsOrdered.map((b) => {
@@ -85,7 +87,7 @@ export default class LibTop extends EventEmitter {
     }
     receiveMessage(buf) {
         // console.log("top accept", binMsg.length)
-        const obj = pbDecode(buf);
+        const obj = PbTranscoder_1.decode(buf);
         // console.log("top decoded", obj)
         if (obj.events)
             obj.events.map((b) => {
@@ -177,8 +179,8 @@ export default class LibTop extends EventEmitter {
         });
         const resRpc = Object.fromEntries(this.responses);
         this.responses.clear();
-        const objSync = diff(this.obj, this.remoteObj);
-        const objDelete = addedDiff(this.remoteObj, this.obj);
+        const objSync = deep_object_diff_1.diff(this.obj, this.remoteObj);
+        const objDelete = deep_object_diff_1.addedDiff(this.remoteObj, this.obj);
         this.remoteObj = JSON.parse(JSON.stringify(this.obj));
         const { events, eventsOrdered } = this;
         this.events = [];
@@ -193,9 +195,10 @@ export default class LibTop extends EventEmitter {
             eventsOrdered,
         };
         const cleanedObject = removeUndefinedAndEmpty(finishedObject);
-        const buf = pbEncode(cleanedObject);
+        const buf = PbTranscoder_1.encode(cleanedObject);
         this.emit("send", buf);
         return buf;
     }
 }
+exports.default = LibTop;
 //# sourceMappingURL=libTop.js.map

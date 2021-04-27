@@ -1,6 +1,8 @@
-import * as EventEmitter from "events";
-import * as tc from "./transcoder";
-export default class LibBot extends EventEmitter {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const events_1 = require("events");
+const tc = require("./transcoder");
+class LibBot extends events_1.EventEmitter {
     constructor(options = {}) {
         super();
         this.options = options;
@@ -179,4 +181,5 @@ export default class LibBot extends EventEmitter {
         }
     }
 }
+exports.default = LibBot;
 //# sourceMappingURL=libBot.js.map

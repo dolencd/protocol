@@ -1,4 +1,6 @@
-export default class IdCreator {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+class IdCreator {
     constructor(min = 1, max = 65535) {
         this.min = min;
         this.max = max;
@@ -15,4 +17,5 @@ export default class IdCreator {
         return id;
     }
 }
+exports.default = IdCreator;
 //# sourceMappingURL=idCreator.js.map

@@ -24,6 +24,10 @@ export interface Transcoder {
 export declare class Protocol extends EventEmitter {
     tp: LibTop;
     private bt?;
+    /**
+     * Initialise the Protocol class. It is not recommended to use this directly.
+     * @param options {ProtocolOptions}
+     */
     constructor(options: ProtocolOptions);
     /**
      * Maximum sequence number that has been sent by this client

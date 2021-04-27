@@ -7,10 +7,10 @@ interface ErrorObject {
     reason?: string;
 }
 /**
- * Create server
- * @param {ProtocolOptions} options Options to use. See ProtocolOptions
+ * Create a new server instance. Each instance communicates with 1 client.
+ * @param {ProtocolOptions} options Options to use. See ProtocolOptions.
  * @param {Buffer} initialMessage First message that was received (contains authentication information)
- * @param {(Buffer) => true | ErrorObject} authFn Function to test if client should be allowed to connect
+ * @param {(Buffer) => true | ErrorObject} authFn Gets the authentication message that was passed to createClient. If it returns true the connection is accepted. Can return an instance of ErrorObject to provide the client a reason for tha failure. If not present, all connections are accepted.
  * @returns {[Protocol, Buffer, ErrorObject]}
  */
 export declare function createServer(options: ProtocolOptions, initialMessage: Buffer, authFn?: (authBuf: Buffer) => true | {
@@ -18,9 +18,9 @@ export declare function createServer(options: ProtocolOptions, initialMessage: B
     reason?: string;
 }): Promise<[Protocol, Buffer, ErrorObject?]>;
 /**
- * Create a new client
+ * Prepare a new client instance
  * @param options {ProtocolOptions} Options to use. See the ProtocolOptions page
- * @param authMessage {Buffer} Buffer containing authentication information
- * @returns {[protocol, messageToSend, error]}
+ * @param authMessage {Buffer} Buffer containing authentication information. If present, it will be passed to the authentication function on the server.
+ * @returns {[Protocol, messageToSend, ErrorObject?]}
  */
-export declare function createClient(options: ProtocolOptions, authMessage: Buffer): [Protocol, Buffer, ErrorObject?];
+export declare function createClient(options: ProtocolOptions, authMessage?: Buffer): [Protocol, Buffer, ErrorObject?];

@@ -1,16 +1,23 @@
-import { EventEmitter } from "events";
-import LibBot from "./libBot";
-import LibTop from "./libTop";
-export class Protocol extends EventEmitter {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Protocol = void 0;
+const events_1 = require("events");
+const libBot_1 = require("./libBot");
+const libTop_1 = require("./libTop");
+class Protocol extends events_1.EventEmitter {
+    /**
+     * Initialise the Protocol class. It is not recommended to use this directly.
+     * @param options {ProtocolOptions}
+     */
     constructor(options) {
         super();
-        this.tp = new LibTop();
+        this.tp = new libTop_1.default();
         // tp event bindings
         ["call", "event", "objSync", "objDelete", "objChange"].map((eventName) => {
             this.tp.on(eventName, this.emit.bind(this, eventName));
         });
         if (options.enableOrdering) {
-            this.bt = new LibBot();
+            this.bt = new libBot_1.default();
             this.bt.on("send", this.emit.bind(this, "send"));
             this.bt.on("message", this.tp.receiveMessage.bind(this.tp));
             this.bt.on("messageOrdered", this.tp.receiveMessageOrdered.bind(this.tp));
@@ -115,4 +122,5 @@ export class Protocol extends EventEmitter {
         return this.tp.callFnOrdered.call(this.tp, method, args);
     }
 }
+exports.Protocol = Protocol;
 //# sourceMappingURL=Protocol.js.map

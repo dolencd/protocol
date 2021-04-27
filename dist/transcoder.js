@@ -1,6 +1,15 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.encodeSessionId = exports.decodeSessionId = exports.encodeSeqAck = exports.decodeSeqAck = exports.encodeClientId = exports.decodeClientId = void 0;
 const SEQ_LEN = 2;
 const SES_LEN = 2;
-export function decodeClientId(buf) {
+/**
+ * Decodes ClientId.
+ * Expects message in format: `<1B length><Id of given length><Other data>`
+ * @param buf {Buffer} Input message
+ * @returns {[Buffer, Buffer]} First is the Id, then the other data.
+ */
+function decodeClientId(buf) {
     if (!Buffer.isBuffer(buf)) {
         throw new TypeError("Input should be Buffer");
     }
@@ -13,7 +22,15 @@ export function decodeClientId(buf) {
     }
     return [buf.slice(1, 1 + l), buf.slice(1 + l)];
 }
-export function encodeClientId(clientId, rest = Buffer.from("")) {
+exports.decodeClientId = decodeClientId;
+/**
+ * Encodes ClientId.
+ * Creates the following format: `<1B length><Id of given length><Other data>`
+ * @param clientId {Buffer} Client Id in the form of a Buffer. Cannot be longer than 255B.
+ * @param rest {Buffer} Remaining data to encode
+ * @returns {Buffer} The encoded Buffer
+ */
+function encodeClientId(clientId, rest = Buffer.from("")) {
     if (!Buffer.isBuffer(clientId) || !Buffer.isBuffer(rest)) {
         throw new TypeError("Input should be Buffer");
     }
@@ -22,7 +39,13 @@ export function encodeClientId(clientId, rest = Buffer.from("")) {
     }
     return Buffer.concat([Buffer.from([clientId.length]), clientId, rest]);
 }
-export function decodeSeqAck(buf) {
+exports.encodeClientId = encodeClientId;
+/**
+ * Decode sequence number and acknowledgement numbers from the provided Buffer. Expects numbers to be encoded in Little Endian.
+ * @param buf {Buffer} Buffer to decode.
+ * @returns {[number, Array<number>, Buffer]} The sequence number, acknowledgement numbers and remaining message.
+ */
+function decodeSeqAck(buf) {
     if (!Buffer.isBuffer(buf)) {
         throw new TypeError("Input should be Buffer");
     }
@@ -61,7 +84,15 @@ export function decodeSeqAck(buf) {
     }
     return [seq, acks, buf.slice(offset)];
 }
-export function encodeSeqAck(seq, acks = [], rest = Buffer.alloc(0)) {
+exports.decodeSeqAck = decodeSeqAck;
+/**
+ * Encode sequence number and acknowledgement numbers together with the remaining Buffer. Numbers are encoded with Little Endian.
+ * @param seq {number} Sequence number. Must be in [0, 65535].
+ * @param acks {Array<number>} Array of acknowledgements. Each acknowledgement must be in [0, 65535].
+ * @param rest {Buffer} Remaining message
+ * @returns {Buffer} The encoded message
+ */
+function encodeSeqAck(seq, acks = [], rest = Buffer.alloc(0)) {
     if (!Buffer.isBuffer(rest)) {
         throw new TypeError("Input should be Buffer");
     }
@@ -79,7 +110,13 @@ export function encodeSeqAck(seq, acks = [], rest = Buffer.alloc(0)) {
     const acksBuf = Buffer.from(new Uint16Array(acks).buffer);
     return Buffer.concat([output, acksBuf, rest]);
 }
-export function decodeSessionId(buf) {
+exports.encodeSeqAck = encodeSeqAck;
+/**
+ * Decode SessionId from Buffer. Reads the first 2B as UInt16 using Little Endian.
+ * @param buf {Buffer} Input Buffer
+ * @returns {[number, Buffer]} The decoded SessionId and the remaining message.
+ */
+function decodeSessionId(buf) {
     if (!Buffer.isBuffer(buf)) {
         throw new TypeError("Input should be Buffer");
     }
@@ -88,7 +125,14 @@ export function decodeSessionId(buf) {
     }
     return [buf.readUInt16LE(0), buf.slice(SES_LEN)];
 }
-export function encodeSessionId(sessionId, rest = Buffer.allocUnsafe(0)) {
+exports.decodeSessionId = decodeSessionId;
+/**
+ * Encodes SessionId together with the remaining Buffer. Writes UInt16 using Little Endian.
+ * @param sessionId {number} The SessionId to write. Must be in [0, 65535].
+ * @param rest {Buffer} Remaining message to encode
+ * @returns {Buffer} Encoded message.
+ */
+function encodeSessionId(sessionId, rest = Buffer.allocUnsafe(0)) {
     if (!Buffer.isBuffer(rest)) {
         throw new TypeError("Input should be Buffer");
     }
@@ -99,4 +143,5 @@ export function encodeSessionId(sessionId, rest = Buffer.allocUnsafe(0)) {
     output.writeUInt16LE(sessionId, 0);
     return Buffer.concat([output, rest]);
 }
+exports.encodeSessionId = encodeSessionId;
 //# sourceMappingURL=transcoder.js.map

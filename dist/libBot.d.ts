@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import * as EventEmitter from "events";
+import { EventEmitter } from "events";
 export interface LibBotOptions {
     /**
      * When a delivery failure is detected, immediately retransmit the message.
