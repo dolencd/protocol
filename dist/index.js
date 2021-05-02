@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createClient = exports.createServer = void 0;
+exports.createClient = exports.createServer = exports.encodeSessionId = exports.decodeSessionId = exports.encodeClientId = exports.decodeClientId = void 0;
 const transcoder_1 = require("./transcoder");
 const Protocol_1 = require("./Protocol");
 const PbTranscoder_1 = require("./PbTranscoder");

@@ -21,25 +21,3 @@
     "src"
   ]
 }
-
-// {
-//   "compilerOptions": {
-//     "target": "ES5",
-//     "module": "commonjs",
-//     "declaration": true,
-//     "outDir": "./dist",
-//     "strict": false,
-//     "esModuleInterop": true,
-//     "removeComments": true,
-//     "allowJs": true,
-//     "lib": [
-//       "ES2020"
-//     ]
-//   },
-//   "include": [
-//     "./src"
-//   ],
-//   "exclude": [
-//     "node_modules"
-//   ]
-// }
