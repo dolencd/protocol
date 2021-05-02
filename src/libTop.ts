@@ -30,7 +30,7 @@ interface ProtocolObject {
 
 interface FnCall {
     id: number;
-    args: Buffer;
+    args?: Buffer;
     method: string;
     resolve: Function;
     reject: Function;
