@@ -1,5 +1,4 @@
 syntax = "proto3";
-option go_package = "test/protocol";
 
 message main {
 
@@ -7,13 +6,13 @@ message main {
     bytes auth = 10;
 
     // The receiver replaces its existing state with objAll
-    obj objAll = 20;
+    // obj objAll = 20;
 
     // The receiver adds all values to the existing state. Creates or updates values depending on the situation. All containing objects/structs are created.
-    obj objSync = 21;
+    // obj objSync = 21;
 
     // First, the receiver removes all VALUES that are PRESENT here, then it removes all empty objects/structs
-    objBool objDelete = 22;
+    // objBool objDelete = 22;
     
     // RPC object for sending requests. 
     map <uint32, rpcCall> reqRpc = 41;
@@ -29,38 +28,9 @@ message main {
     string reason = 103;
 }
 
-enum Methods {
-    unknown = 0;
-    sum = 1;
-    bla = 2;
-    send = 3;
-    add = 4;
-}
-
-message obj {
-    obj naprej = 10;
-    uint32 int = 1;
-    string str = 2;
-    bool boolean = 3;
-    fixed32 timestamp = 7;
-    float float = 8;
-    bytes bytes = 4;
-    bytes bytes2 = 6;
-    uint32 retries = 5;
-}
-
-message objBool {
-    objBool naprej = 5;
-    bool int = 1;
-    bool str = 2;
-    bool float = 3;
-    bool bytes = 4;
-}
-
 message rpcCall {
-    Methods method = 3;
     bytes args = 1;
     bytes returns = 2;
+    // enum method = 3;
     bool isError = 4;
 }
-

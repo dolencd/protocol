@@ -16,10 +16,23 @@ describe("Establishing and communication - LibBot + perfect communication", () =
     let rpcFn: jest.Mock;
 
     beforeEach(async () => {
-        [cp, authMsg, err1] = createClient({ enableOrdering: true }, Buffer.from([1]));
+        [cp, authMsg, err1] = createClient(
+            {
+                enableOrdering: true,
+                protoPath: "./src/__tests__/test.proto",
+                syncType: "obj",
+                delType: "objBool",
+                methodEnumName: "methods",
+            },
+            Buffer.from([1])
+        );
         [sp, resMsg, err2] = await createServer(
             {
                 enableOrdering: true,
+                protoPath: "./src/__tests__/test.proto",
+                syncType: "obj",
+                delType: "objBool",
+                methodEnumName: "methods",
             },
             authMsg,
             (authBuf: Buffer) => {
@@ -131,10 +144,23 @@ describe("Establishing and communication - NO LibBot + perfect communication", (
     let rpcFn: jest.Mock;
 
     beforeEach(async () => {
-        [cp, authMsg, err1] = createClient({ enableOrdering: false }, Buffer.from([1]));
+        [cp, authMsg, err1] = createClient(
+            {
+                enableOrdering: false,
+                protoPath: "./src/__tests__/test.proto",
+                syncType: "obj",
+                delType: "objBool",
+                methodEnumName: "methods",
+            },
+            Buffer.from([1])
+        );
         [sp, resMsg, err2] = await createServer(
             {
                 enableOrdering: false,
+                protoPath: "./src/__tests__/test.proto",
+                syncType: "obj",
+                delType: "objBool",
+                methodEnumName: "methods",
             },
             authMsg,
             (authBuf: Buffer) => {

@@ -1,5 +1,12 @@
-import { encode as pbEncode, decode as pbDecode } from "../PbTranscoder";
+import { PbTranscoder } from "../PbTranscoder";
 import LibTop from "../libTop";
+
+const tc = new PbTranscoder({
+    protoPath: "./src/__tests__/test.proto",
+    syncType: "obj",
+    delType: "objBool",
+    methodEnumName: "methods",
+});
 
 describe("Receive message", () => {
     const obj = {
@@ -30,12 +37,12 @@ describe("Receive message", () => {
         events: [Buffer.from("123"), Buffer.from("456")],
         eventsOrdered: [Buffer.from("1234"), Buffer.from("5678")],
     };
-    const messageBuf = pbEncode(obj);
+    const messageBuf = tc.encode(obj);
 
     test("Receive message", () => {
         const eventFn = jest.fn();
         const rpcFn = jest.fn();
-        const tp = new LibTop();
+        const tp = new LibTop({ transcoder: tc });
         tp.on("call", rpcFn);
         tp.on("event", eventFn);
 
@@ -55,7 +62,7 @@ describe("Receive message", () => {
     test("Receive message ordered", () => {
         const eventFn = jest.fn();
         const rpcFn = jest.fn();
-        const tp = new LibTop();
+        const tp = new LibTop({ transcoder: tc });
         tp.on("call", rpcFn);
         tp.on("event", eventFn);
 
@@ -67,7 +74,7 @@ describe("Receive message", () => {
     });
 
     test("Receive empty message", () => {
-        const tp = new LibTop();
+        const tp = new LibTop({ transcoder: tc });
         const eventFn = jest.fn();
         const rpcFn = jest.fn();
         tp.on("call", rpcFn);
@@ -85,10 +92,10 @@ describe("Receive message", () => {
 
 describe("Sending message", () => {
     test("Send regular RPC call", () => {
-        const tp = new LibTop();
+        const tp = new LibTop({ transcoder: tc });
         tp.callFn("sum", Buffer.from("1234"));
         tp.callFn("add");
-        expect(pbDecode(tp.send())).toEqual({
+        expect(tc.decode(tp.send())).toEqual({
             reqRpc: {
                 1: {
                     method: "sum",
@@ -102,10 +109,10 @@ describe("Sending message", () => {
     });
 
     test("Send ordered RPC call", () => {
-        const tp = new LibTop();
+        const tp = new LibTop({ transcoder: tc });
         tp.callFnOrdered("sum", Buffer.from("1234"));
         tp.callFnOrdered("add");
-        expect(pbDecode(tp.send())).toEqual({
+        expect(tc.decode(tp.send())).toEqual({
             reqRpcOrdered: {
                 1: {
                     method: "sum",
@@ -119,28 +126,28 @@ describe("Sending message", () => {
     });
 
     test("Send regular event", () => {
-        const tp = new LibTop();
+        const tp = new LibTop({ transcoder: tc });
         tp.sendEvent(Buffer.from("12"));
         tp.sendEvent(Buffer.from("34"));
 
-        expect(pbDecode(tp.send())).toEqual({
+        expect(tc.decode(tp.send())).toEqual({
             events: [Buffer.from("12"), Buffer.from("34")],
         });
     });
     test("Send ordered event", () => {
-        const tp = new LibTop();
+        const tp = new LibTop({ transcoder: tc });
         tp.sendEventOrdered(Buffer.from("12"));
         tp.sendEventOrdered(Buffer.from("34"));
 
-        expect(pbDecode(tp.send())).toEqual({
+        expect(tc.decode(tp.send())).toEqual({
             eventsOrdered: [Buffer.from("12"), Buffer.from("34")],
         });
     });
 });
 
 describe("LibTop roundtrip", () => {
-    const tp1 = new LibTop();
-    const tp2 = new LibTop();
+    const tp1 = new LibTop({ transcoder: tc });
+    const tp2 = new LibTop({ transcoder: tc });
 
     tp1.on("send", (buf) => {
         tp2.receiveMessage(buf);

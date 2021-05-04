@@ -1,4 +1,11 @@
-import { encode, decode } from "../PbTranscoder";
+import { PbTranscoder } from "../PbTranscoder";
+
+const tc = new PbTranscoder({
+    protoPath: "./src/__tests__/test.proto",
+    syncType: "obj",
+    delType: "objBool",
+    methodEnumName: "methods",
+});
 
 describe("Full object", () => {
     const obj = {
@@ -44,8 +51,8 @@ describe("Full object", () => {
     };
 
     test("Decoded obj is the same as input obj", () => {
-        const encoded = encode(obj);
-        const decoded = decode(encoded);
+        const encoded = tc.encode(obj);
+        const decoded = tc.decode(encoded);
         expect(decoded).toEqual(obj);
     });
 });

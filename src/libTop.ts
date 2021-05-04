@@ -1,8 +1,7 @@
 import { EventEmitter } from "events";
-import { isEmpty } from "lodash";
-import { diff, addedDiff } from "deep-object-diff";
+import { isEmpty, cloneDeep } from "lodash";
+import * as differ from "./differ";
 import IdCreator from "./idCreator";
-import { encode as pbEncode, decode as pbDecode } from "./PbTranscoder";
 
 interface RpcReqObj {
     method: string;
@@ -26,6 +25,15 @@ interface ProtocolObject {
     code?: number;
     codes?: Array<number>;
     reason?: string;
+}
+
+interface Transcoder {
+    encode: (obj: Record<string, any>) => Buffer;
+    decode: (buf: Buffer) => Record<string, any>;
+}
+
+export interface LibTopOptions {
+    transcoder?: Transcoder;
 }
 
 interface FnCall {
@@ -55,9 +63,11 @@ function removeUndefinedAndEmpty(o: Record<string, any>) {
 }
 
 export default class LibTop extends EventEmitter {
-    remoteObj: any;
+    incObj: Record<string, any>;
 
-    obj: any;
+    outObj: Record<string, any>;
+
+    outObjSent: Record<string, any>;
 
     responses: Map<number, RpcResObj>;
 
@@ -71,12 +81,16 @@ export default class LibTop extends EventEmitter {
 
     idCreator: IdCreator;
 
-    constructor() {
+    transcoder: Transcoder;
+
+    constructor(options: LibTopOptions) {
         super();
         this.idCreator = new IdCreator(1, 65530);
 
-        this.remoteObj = {};
-        this.obj = {};
+        this.transcoder = options.transcoder;
+
+        this.outObj = {};
+        this.incObj = {};
 
         this.responses = new Map();
         this.requests = new Map();
@@ -140,9 +154,17 @@ export default class LibTop extends EventEmitter {
         });
     }
 
+    private receiveObjSync(obj: Record<string, any>): void {
+        this.incObj = differ.applySync(this.incObj, obj);
+    }
+
+    private receiveObjDelete(obj: Record<string, any>): void {
+        this.incObj = differ.applyDelete(this.incObj, obj);
+    }
+
     receiveMessageOrdered(buf: Buffer): void {
         // console.log("top accept", binMsg.length)
-        const obj: ProtocolObject = pbDecode(buf);
+        const obj: ProtocolObject = this.transcoder.decode(buf);
 
         // console.log("top decoded", obj)
         if (obj.eventsOrdered)
@@ -155,11 +177,28 @@ export default class LibTop extends EventEmitter {
         if (obj.reqRpcOrdered) {
             this.receiveFnCalls(obj.reqRpcOrdered);
         }
+
+        if (obj.objAll) {
+            this.incObj = obj.objAll;
+            this.emit("objChange", this.incObj, this.incObj);
+
+            if (obj.objSync || obj.objDelete) {
+                console.error("Got message with objAll AND objSync or objDelete. Ignoringthem");
+            }
+        } else {
+            if (obj.objSync) {
+                this.receiveObjSync(obj.objSync);
+            }
+
+            if (obj.objDelete) {
+                this.receiveObjDelete(obj.objDelete);
+            }
+        }
     }
 
     receiveMessage(buf: Buffer): void {
         // console.log("top accept", binMsg.length)
-        const obj: ProtocolObject = pbDecode(buf);
+        const obj: ProtocolObject = this.transcoder.decode(buf);
 
         // console.log("top decoded", obj)
         if (obj.events)
@@ -260,9 +299,7 @@ export default class LibTop extends EventEmitter {
         const resRpc = Object.fromEntries(this.responses);
         this.responses.clear();
 
-        const objSync = diff(this.obj, this.remoteObj);
-        const objDelete = addedDiff(this.remoteObj, this.obj);
-        this.remoteObj = JSON.parse(JSON.stringify(this.obj));
+        this.outObjSent = cloneDeep(this.outObj);
 
         const { events, eventsOrdered } = this;
         this.events = [];
@@ -272,13 +309,13 @@ export default class LibTop extends EventEmitter {
             reqRpcOrdered,
             reqRpc,
             resRpc,
-            objSync,
-            objDelete,
+            objSync: differ.getSync(this.outObj, this.outObjSent),
+            objDelete: differ.getDelete(this.outObjSent, this.outObj),
             events,
             eventsOrdered,
         };
         const cleanedObject = removeUndefinedAndEmpty(finishedObject);
-        const buf = pbEncode(cleanedObject);
+        const buf = this.transcoder.encode(cleanedObject);
         this.emit("send", buf);
         return buf;
     }

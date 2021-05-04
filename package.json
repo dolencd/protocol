@@ -50,7 +50,6 @@
     "typescript-eslint-parser": "^22.0.0"
   },
   "dependencies": {
-    "deep-object-diff": "^1.1.0",
     "lodash": "^4.17.21",
     "protobufjs": "^6.10.2"
   }

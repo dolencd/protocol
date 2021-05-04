@@ -1,8 +1,9 @@
 import { EventEmitter } from "events";
 import LibBot, { LibBotOptions } from "./libBot";
-import LibTop from "./libTop";
+import LibTop, { LibTopOptions } from "./libTop";
+import { PbTranscoderOptions } from "./PbTranscoder";
 
-export interface ProtocolOptions extends LibBotOptions {
+export interface ProtocolOptions extends LibBotOptions, LibTopOptions, PbTranscoderOptions {
     /**
      * Adds support for unreliable connections. Guarantees message delivery and order.
      * Enable if the underlying communications protocol does not provide these guarantees.
@@ -24,6 +25,9 @@ export interface Transcoder {
     decode(buf: Buffer): Record<string, any>;
 }
 
+/**
+ * Main Protocol class
+ */
 export class Protocol extends EventEmitter {
     tp: LibTop;
 
@@ -36,7 +40,7 @@ export class Protocol extends EventEmitter {
     constructor(options: ProtocolOptions) {
         super();
 
-        this.tp = new LibTop();
+        this.tp = new LibTop(options);
 
         // tp event bindings
         ["call", "event", "objSync", "objDelete", "objChange"].map((eventName) => {
