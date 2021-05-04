@@ -3,9 +3,6 @@ import LibTop from "../libTop";
 
 const tc = new PbTranscoder({
     protoPath: "./src/__tests__/test.proto",
-    syncType: "obj",
-    delType: "objBool",
-    methodEnumName: "methods",
 });
 
 describe("Receive message", () => {
