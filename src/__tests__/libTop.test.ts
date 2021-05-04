@@ -146,66 +146,91 @@ describe("Sending message", () => {
 });
 
 describe("LibTop roundtrip", () => {
-    const tp1 = new LibTop({ transcoder: tc });
-    const tp2 = new LibTop({ transcoder: tc });
+    let tp1: LibTop;
+    let tp2: LibTop;
+    let eventFn: jest.Mock;
+    let rpcFn: jest.Mock;
 
-    tp1.on("send", (buf) => {
-        tp2.receiveMessage(buf);
-        tp2.receiveMessageOrdered(buf);
-    });
+    beforeEach(() => {
+        tp1 = new LibTop({ transcoder: tc });
+        tp2 = new LibTop({ transcoder: tc });
 
-    tp2.on("send", (buf) => {
-        tp1.receiveMessage(buf);
-        tp1.receiveMessageOrdered(buf);
-    });
-
-    const rpcFn = jest.fn((method, args, cb) => {
-        if (method === "add") cb(false, Buffer.concat([Buffer.from([0, 0]), args || Buffer.allocUnsafe(0)]));
-        if (method === "sum") cb(true, Buffer.concat([Buffer.from([0, 0]), args || Buffer.allocUnsafe(0)]));
-    });
-    const eventFn = jest.fn();
-
-    tp2.on("call", rpcFn);
-    tp2.on("event", eventFn);
-
-    test("Events", () => {
-        tp1.sendEvent(Buffer.from("1"));
-        tp1.sendEventOrdered(Buffer.from("3"));
-        tp1.sendEvent(Buffer.from("2"));
-
-        tp1.send();
-
-        expect(eventFn.mock.calls).toEqual([[Buffer.from("1")], [Buffer.from("2")], [Buffer.from("3")]]);
-    });
-
-    test("RPC execution", (done) => {
-        Promise.allSettled([
-            tp1.callFn("add", Buffer.from("12345")),
-            tp1.callFn("sum"),
-            tp1.callFnOrdered("sum", Buffer.from("12345")),
-            tp1.callFnOrdered("add"),
-        ]).then((res) => {
-            expect(res).toEqual([
-                {
-                    status: "fulfilled",
-                    value: Buffer.concat([Buffer.from([0, 0]), Buffer.from("12345")]),
-                },
-                {
-                    status: "rejected",
-                    reason: Buffer.from([0, 0]),
-                },
-                {
-                    status: "rejected",
-                    reason: Buffer.concat([Buffer.from([0, 0]), Buffer.from("12345")]),
-                },
-                {
-                    status: "fulfilled",
-                    value: Buffer.from([0, 0]),
-                },
-            ]);
-            done();
+        tp1.on("send", (buf) => {
+            tp2.receiveMessage(buf);
+            tp2.receiveMessageOrdered(buf);
         });
+
+        tp2.on("send", (buf) => {
+            tp1.receiveMessage(buf);
+            tp1.receiveMessageOrdered(buf);
+        });
+
+        rpcFn = jest.fn((method, args, cb) => {
+            if (method === "add") cb(false, Buffer.concat([Buffer.from([0, 0]), args || Buffer.allocUnsafe(0)]));
+            if (method === "sum") cb(true, Buffer.concat([Buffer.from([0, 0]), args || Buffer.allocUnsafe(0)]));
+        });
+        eventFn = jest.fn();
+
+        tp2.on("call", rpcFn);
+        tp2.on("event", eventFn);
+    });
+
+    // test("Events", () => {
+    //     tp1.sendEvent(Buffer.from("1"));
+    //     tp1.sendEventOrdered(Buffer.from("3"));
+    //     tp1.sendEvent(Buffer.from("2"));
+
+    //     tp1.send();
+
+    //     expect(eventFn.mock.calls).toEqual([[Buffer.from("1")], [Buffer.from("2")], [Buffer.from("3")]]);
+    // });
+
+    // test("RPC execution", (done) => {
+    //     Promise.allSettled([
+    //         tp1.callFn("add", Buffer.from("12345")),
+    //         tp1.callFn("sum"),
+    //         tp1.callFnOrdered("sum", Buffer.from("12345")),
+    //         tp1.callFnOrdered("add"),
+    //     ]).then((res) => {
+    //         expect(res).toEqual([
+    //             {
+    //                 status: "fulfilled",
+    //                 value: Buffer.concat([Buffer.from([0, 0]), Buffer.from("12345")]),
+    //             },
+    //             {
+    //                 status: "rejected",
+    //                 reason: Buffer.from([0, 0]),
+    //             },
+    //             {
+    //                 status: "rejected",
+    //                 reason: Buffer.concat([Buffer.from([0, 0]), Buffer.from("12345")]),
+    //             },
+    //             {
+    //                 status: "fulfilled",
+    //                 value: Buffer.from([0, 0]),
+    //             },
+    //         ]);
+    //         done();
+    //     });
+    //     tp1.send();
+    //     tp2.send();
+    // });
+
+    test("Object Syncing", () => {
+        tp1.outObj.int = 1234;
+        tp1.outObj.naprej = {};
+        tp1.outObj.naprej.naprej = {};
+        tp1.outObj.naprej.naprej.float = 3.14;
+        tp1.outObj.bytes = Buffer.from("12345");
+        tp1.outObj.naprej.boolean = false;
+        tp1.outObj.str = "test";
+
         tp1.send();
-        tp2.send();
+
+        expect(tp2.incObj.int).toEqual(1234);
+        expect(tp2.incObj.naprej.naprej.float).toBeCloseTo(3.14, 3);
+        expect(tp2.incObj.bytes).toEqual(Buffer.from("12345"));
+        expect(tp2.incObj.naprej.boolean).toEqual(false);
+        expect(tp2.incObj.str).toEqual("test");
     });
 });

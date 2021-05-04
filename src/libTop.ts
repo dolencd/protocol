@@ -91,6 +91,7 @@ export default class LibTop extends EventEmitter {
 
         this.outObj = {};
         this.incObj = {};
+        this.outObjSent = {};
 
         this.responses = new Map();
         this.requests = new Map();
@@ -299,8 +300,6 @@ export default class LibTop extends EventEmitter {
         const resRpc = Object.fromEntries(this.responses);
         this.responses.clear();
 
-        this.outObjSent = cloneDeep(this.outObj);
-
         const { events, eventsOrdered } = this;
         this.events = [];
         this.eventsOrdered = [];
@@ -309,11 +308,12 @@ export default class LibTop extends EventEmitter {
             reqRpcOrdered,
             reqRpc,
             resRpc,
-            objSync: differ.getSync(this.outObj, this.outObjSent),
+            objSync: differ.getSync(this.outObjSent, this.outObj),
             objDelete: differ.getDelete(this.outObjSent, this.outObj),
             events,
             eventsOrdered,
         };
+        this.outObjSent = cloneDeep(this.outObj);
         const cleanedObject = removeUndefinedAndEmpty(finishedObject);
         const buf = this.transcoder.encode(cleanedObject);
         this.emit("send", buf);
