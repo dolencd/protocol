@@ -108,6 +108,21 @@ describe("Test differ", () => {
     test("applySync", () => {
         expect(applySync(start, sync)).toEqual(afterSync);
     });
+
+    test("Start sync with empty object", () => {
+        expect(getSync({}, end)).toEqual(end);
+        expect(applySync({}, end)).toEqual(end);
+    });
+
+    test("Delete everything", () => {
+        expect(getDelete(start, {})).toEqual({
+            a: true,
+            b: true,
+            c: true,
+            d: true,
+        });
+    });
+
     test("apply both", () => {
         const a = applyDelete(start, del);
         const b = applySync(a, sync);
