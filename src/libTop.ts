@@ -157,10 +157,12 @@ export default class LibTop extends EventEmitter {
 
     private receiveObjSync(obj: Record<string, any>): void {
         this.incObj = differ.applySync(this.incObj, obj);
+        this.emit("objSync", obj, this.incObj);
     }
 
     private receiveObjDelete(obj: Record<string, any>): void {
         this.incObj = differ.applyDelete(this.incObj, obj);
+        this.emit("objDelete", obj, this.incObj);
     }
 
     receiveMessageOrdered(buf: Buffer): void {
@@ -181,7 +183,6 @@ export default class LibTop extends EventEmitter {
 
         if (obj.objAll) {
             this.incObj = obj.objAll;
-            this.emit("objChange", this.incObj, this.incObj);
 
             if (obj.objSync || obj.objDelete) {
                 console.error("Got message with objAll AND objSync or objDelete. Ignoringthem");
@@ -194,6 +195,10 @@ export default class LibTop extends EventEmitter {
             if (obj.objDelete) {
                 this.receiveObjDelete(obj.objDelete);
             }
+        }
+
+        if (obj.objAll || obj.objSync || obj.objDelete) {
+            this.emit("objChange", this.incObj);
         }
     }
 

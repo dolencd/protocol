@@ -172,46 +172,46 @@ describe("LibTop roundtrip", () => {
         tp2.on("event", eventFn);
     });
 
-    // test("Events", () => {
-    //     tp1.sendEvent(Buffer.from("1"));
-    //     tp1.sendEventOrdered(Buffer.from("3"));
-    //     tp1.sendEvent(Buffer.from("2"));
+    test("Events", () => {
+        tp1.sendEvent(Buffer.from("1"));
+        tp1.sendEventOrdered(Buffer.from("3"));
+        tp1.sendEvent(Buffer.from("2"));
 
-    //     tp1.send();
+        tp1.send();
 
-    //     expect(eventFn.mock.calls).toEqual([[Buffer.from("1")], [Buffer.from("2")], [Buffer.from("3")]]);
-    // });
+        expect(eventFn.mock.calls).toEqual([[Buffer.from("1")], [Buffer.from("2")], [Buffer.from("3")]]);
+    });
 
-    // test("RPC execution", (done) => {
-    //     Promise.allSettled([
-    //         tp1.callFn("add", Buffer.from("12345")),
-    //         tp1.callFn("sum"),
-    //         tp1.callFnOrdered("sum", Buffer.from("12345")),
-    //         tp1.callFnOrdered("add"),
-    //     ]).then((res) => {
-    //         expect(res).toEqual([
-    //             {
-    //                 status: "fulfilled",
-    //                 value: Buffer.concat([Buffer.from([0, 0]), Buffer.from("12345")]),
-    //             },
-    //             {
-    //                 status: "rejected",
-    //                 reason: Buffer.from([0, 0]),
-    //             },
-    //             {
-    //                 status: "rejected",
-    //                 reason: Buffer.concat([Buffer.from([0, 0]), Buffer.from("12345")]),
-    //             },
-    //             {
-    //                 status: "fulfilled",
-    //                 value: Buffer.from([0, 0]),
-    //             },
-    //         ]);
-    //         done();
-    //     });
-    //     tp1.send();
-    //     tp2.send();
-    // });
+    test("RPC execution", (done) => {
+        Promise.allSettled([
+            tp1.callFn("add", Buffer.from("12345")),
+            tp1.callFn("sum"),
+            tp1.callFnOrdered("sum", Buffer.from("12345")),
+            tp1.callFnOrdered("add"),
+        ]).then((res) => {
+            expect(res).toEqual([
+                {
+                    status: "fulfilled",
+                    value: Buffer.concat([Buffer.from([0, 0]), Buffer.from("12345")]),
+                },
+                {
+                    status: "rejected",
+                    reason: Buffer.from([0, 0]),
+                },
+                {
+                    status: "rejected",
+                    reason: Buffer.concat([Buffer.from([0, 0]), Buffer.from("12345")]),
+                },
+                {
+                    status: "fulfilled",
+                    value: Buffer.from([0, 0]),
+                },
+            ]);
+            done();
+        });
+        tp1.send();
+        tp2.send();
+    });
 
     test("Object Syncing", () => {
         tp1.outObj.int = 1234;

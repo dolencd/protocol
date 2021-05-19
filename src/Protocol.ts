@@ -88,6 +88,20 @@ export class Protocol extends EventEmitter {
     }
 
     /**
+     * The received object sent from the remote host.
+     */
+    get incObj(): Record<string, any> {
+        return this.tp.incObj;
+    }
+
+    /**
+     * Outgoing object to send to the remote host.
+     */
+    get outObj(): Record<string, any> {
+        return this.tp.outObj;
+    }
+
+    /**
      * Package all data and get a Buffer to send to the other side.
      * @function send
      * @returns {Buffer} Buffer to send to other side
