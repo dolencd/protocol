@@ -109,9 +109,11 @@
 						<section class="tsd-index-section ">
 							<h3>Accessors</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="protocol.html#incobj" class="tsd-kind-icon">inc<wbr>Obj</a></li>
 								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="protocol.html#maxemittedseq" class="tsd-kind-icon">max<wbr>Emitted<wbr>Seq</a></li>
 								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="protocol.html#maxincseq" class="tsd-kind-icon">max<wbr>Inc<wbr>Seq</a></li>
 								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="protocol.html#maxsendseq" class="tsd-kind-icon">max<wbr>Send<wbr>Seq</a></li>
+								<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="protocol.html#outobj" class="tsd-kind-icon">out<wbr>Obj</a></li>
 							</ul>
 						</section>
 						<section class="tsd-index-section ">
@@ -159,7 +161,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides EventEmitter.constructor</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/88ff9f8/src/Protocol.ts#L34">src/Protocol.ts:34</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L34">src/Protocol.ts:34</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -188,7 +190,7 @@
 					<div class="tsd-signature tsd-kind-icon">bt<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">default</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol/blob/88ff9f8/src/Protocol.ts#L34">src/Protocol.ts:34</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L34">src/Protocol.ts:34</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -198,7 +200,7 @@
 					<div class="tsd-signature tsd-kind-icon">tp<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">default</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol/blob/88ff9f8/src/Protocol.ts#L32">src/Protocol.ts:32</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L32">src/Protocol.ts:32</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -209,7 +211,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from EventEmitter.captureRejectionSymbol</p>
 						<ul>
-							<li>Defined in node_modules/@types/node/events.d.ts:43</li>
+							<li>Defined in node_modules/@types/node/events.d.ts:38</li>
 						</ul>
 					</aside>
 				</section>
@@ -220,7 +222,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from EventEmitter.captureRejections</p>
 						<ul>
-							<li>Defined in node_modules/@types/node/events.d.ts:49</li>
+							<li>Defined in node_modules/@types/node/events.d.ts:44</li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -236,7 +238,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from EventEmitter.defaultMaxListeners</p>
 						<ul>
-							<li>Defined in node_modules/@types/node/events.d.ts:50</li>
+							<li>Defined in node_modules/@types/node/events.d.ts:45</li>
 						</ul>
 					</aside>
 				</section>
@@ -247,7 +249,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from EventEmitter.errorMonitor</p>
 						<ul>
-							<li>Defined in node_modules/@types/node/events.d.ts:42</li>
+							<li>Defined in node_modules/@types/node/events.d.ts:37</li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -265,6 +267,28 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Accessors</h2>
 				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
+					<a name="incobj" class="tsd-anchor"></a>
+					<h3>inc<wbr>Obj</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> incObj<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L93">src/Protocol.ts:93</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>The received object sent from the remote host.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
 					<a name="maxemittedseq" class="tsd-anchor"></a>
 					<h3>max<wbr>Emitted<wbr>Seq</h3>
 					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
@@ -274,7 +298,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/88ff9f8/src/Protocol.ts#L85">src/Protocol.ts:85</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L85">src/Protocol.ts:85</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -298,7 +322,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/88ff9f8/src/Protocol.ts#L75">src/Protocol.ts:75</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L75">src/Protocol.ts:75</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -322,7 +346,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/88ff9f8/src/Protocol.ts#L65">src/Protocol.ts:65</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L65">src/Protocol.ts:65</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -333,6 +357,28 @@
 								</div>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						</li>
+					</ul>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
+					<a name="outobj" class="tsd-anchor"></a>
+					<h3>out<wbr>Obj</h3>
+					<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
+						<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> outObj<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L100">src/Protocol.ts:100</a></li>
+								</ul>
+							</aside>
+							<div class="tsd-comment tsd-typography">
+								<div class="lead">
+									<p>Outgoing object to send to the remote host.</p>
+								</div>
+							</div>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -350,7 +396,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.addListener</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:62</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:57</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -394,7 +440,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/88ff9f8/src/Protocol.ts#L146">src/Protocol.ts:146</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L160">src/Protocol.ts:160</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -439,7 +485,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/88ff9f8/src/Protocol.ts#L158">src/Protocol.ts:158</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L172">src/Protocol.ts:172</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -485,7 +531,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.emit</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:72</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:67</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -512,7 +558,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.eventNames</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:77</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:72</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">(</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">symbol</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">[]</span></h4>
@@ -530,7 +576,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.getMaxListeners</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:69</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:64</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
@@ -548,7 +594,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.listenerCount</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:73</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:68</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -572,7 +618,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.listeners</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:70</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:65</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -596,7 +642,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.off</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:66</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:61</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -641,7 +687,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.on</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:63</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:58</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -686,7 +732,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.once</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:64</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:59</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -731,7 +777,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.prependListener</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:75</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:70</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -776,7 +822,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.prependOnceListener</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:76</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:71</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -821,7 +867,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.rawListeners</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:71</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:66</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -844,7 +890,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/88ff9f8/src/Protocol.ts#L109">src/Protocol.ts:109</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L123">src/Protocol.ts:123</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -881,7 +927,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.removeAllListeners</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:67</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:62</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -905,7 +951,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.removeListener</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:65</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:60</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -949,7 +995,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/88ff9f8/src/Protocol.ts#L95">src/Protocol.ts:95</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L109">src/Protocol.ts:109</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -977,7 +1023,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/88ff9f8/src/Protocol.ts#L124">src/Protocol.ts:124</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L138">src/Protocol.ts:138</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1013,7 +1059,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/88ff9f8/src/Protocol.ts#L134">src/Protocol.ts:134</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L148">src/Protocol.ts:148</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1050,7 +1096,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.setMaxListeners</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:68</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:63</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1074,7 +1120,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.listenerCount</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:31</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:26</li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1108,7 +1154,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.on</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:28</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:23</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1136,7 +1182,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.once</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:26</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:21</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1154,7 +1200,7 @@
 							<aside class="tsd-sources">
 								<p>Inherited from EventEmitter.once</p>
 								<ul>
-									<li>Defined in node_modules/@types/node/events.d.ts:27</li>
+									<li>Defined in node_modules/@types/node/events.d.ts:22</li>
 								</ul>
 							</aside>
 							<h4 class="tsd-parameters-title">Parameters</h4>
@@ -1209,6 +1255,9 @@
 								<a href="protocol.html#errormonitor" class="tsd-kind-icon">error<wbr>Monitor</a>
 							</li>
 							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
+								<a href="protocol.html#incobj" class="tsd-kind-icon">inc<wbr>Obj</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
 								<a href="protocol.html#maxemittedseq" class="tsd-kind-icon">max<wbr>Emitted<wbr>Seq</a>
 							</li>
 							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
@@ -1216,6 +1265,9 @@
 							</li>
 							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
 								<a href="protocol.html#maxsendseq" class="tsd-kind-icon">max<wbr>Send<wbr>Seq</a>
+							</li>
+							<li class=" tsd-kind-get-signature tsd-parent-kind-class">
+								<a href="protocol.html#outobj" class="tsd-kind-icon">out<wbr>Obj</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external">
 								<a href="protocol.html#addlistener" class="tsd-kind-icon">add<wbr>Listener</a>
