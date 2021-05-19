@@ -25,23 +25,24 @@ Reference documentation is available at https://dolencd.github.io/protocol/.
 
 ## Architecture
 
-### Top Protocol
+When using the library, a developer should only ever interact with the main Protocol class, but under the hood the functionality is split into 2 sub-classes, each with its own role.
 
-The top later protocol handles application payloads directly. It tracks data that is set to be transmitted and, when the time comes, sends it in an efficient format.
+### Top
+
+The top later protocol handles application payloads directly. It provides functions and abstractions that, when used, store the data in a local state. When triggered, the top layer will encode this data into an array of bytes (an opaque message) that underlying communication layers need to deliver to the other instance of the library.
 
 It requires that all messages are delivered correctly and in order.
 
-### Bottom Protocol
+### Bottom
 
-The bottom protocol is used when the underlying communications protocol does not meet the requirements of the top protocol. It provides guarantees in message delivery and ordering.
+The bottom layer is used when the underlying communications protocol does not meet the requirements of the top protocol. It provides guarantees in message delivery and ordering, handling processes like acknowledgements and message retransmission.
 
 By default all protocol messages are bundled with application payloads, bringing maximum efficiency. There are options that speed up failure detection and message retransmission at the expense increased message size and number.
 
 ## TODO
  * Implement timers for acks
  * Provide options to send application data during the initial handshake
- * Add Object sync and delete handling
  * Handle sequence number looping
- * Dinamically set up object proto
+ * Dynamically set up objDelete proto
  * Provide functions to simplify initial message retransmission
  * Add optional CRC to bottom protocol
