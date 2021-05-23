@@ -259,4 +259,22 @@ describe("Establishing and communication - NO LibBot + perfect communication", (
         cp.send();
         sp.send();
     });
+
+    test("Object Syncing", () => {
+        sp.outObj.int = 1234;
+        sp.outObj.naprej = {};
+        sp.outObj.naprej.naprej = {};
+        sp.outObj.naprej.naprej.float = 3.14;
+        sp.outObj.bytes = Buffer.from("12345");
+        sp.outObj.naprej.boolean = false;
+        sp.outObj.str = "test";
+
+        sp.send();
+
+        expect(cp.incObj.int).toEqual(1234);
+        expect(cp.incObj.naprej.naprej.float).toBeCloseTo(3.14, 3);
+        expect(cp.incObj.bytes).toEqual(Buffer.from("12345"));
+        expect(cp.incObj.naprej.boolean).toEqual(false);
+        expect(cp.incObj.str).toEqual("test");
+    });
 });
