@@ -277,4 +277,72 @@ describe("Establishing and communication - NO LibBot + perfect communication", (
         expect(cp.incObj.naprej.boolean).toEqual(false);
         expect(cp.incObj.str).toEqual("test");
     });
+
+    test("Object Syncing with preset", async () => {
+        [cp, authMsg, err1] = createClient(
+            {
+                enableOrdering: false,
+                protoPath: "./src/__tests__/test.proto",
+                syncType: "obj",
+                delType: "objBool",
+                methodEnumName: "methods",
+                initialOutObj: {
+                    str: "abc",
+                    naprej: {
+                        boolean: false,
+                    },
+                },
+            },
+            Buffer.from([1])
+        );
+        [sp, resMsg, err2] = await createServer(
+            {
+                enableOrdering: false,
+                protoPath: "./src/__tests__/test.proto",
+                syncType: "obj",
+                delType: "objBool",
+                methodEnumName: "methods",
+                initialIncObj: {
+                    str: "abc",
+                    naprej: {
+                        boolean: false,
+                    },
+                },
+            },
+            authMsg,
+            (authBuf: Buffer) => {
+                if (authBuf[0] % 2 === 1) {
+                    return true;
+                }
+                return {
+                    code: 400,
+                    reason: "Auth buffer should be odd",
+                };
+            }
+        );
+        cp.receiveMessage(resMsg);
+
+        cp.on("send", (buf) => {
+            sp.receiveMessage(buf);
+        });
+
+        sp.on("send", (buf) => {
+            cp.receiveMessage(buf);
+        });
+
+        cp.outObj.int = 1234;
+        cp.outObj.naprej = {};
+        cp.outObj.naprej.naprej = {};
+        cp.outObj.naprej.naprej.float = 3.14;
+        cp.outObj.bytes = Buffer.from("12345");
+        delete cp.outObj.str;
+
+        cp.send();
+
+        expect(sp.incObj.int).toEqual(1234);
+        expect(sp.incObj.naprej.naprej.float).toBeCloseTo(3.14, 3);
+        expect(sp.incObj.bytes).toEqual(Buffer.from("12345"));
+        expect(sp.incObj.naprej.boolean).toEqual(false);
+        expect(sp.incObj.str).toBeUndefined();
+    });
 });

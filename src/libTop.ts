@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { isEmpty, cloneDeep } from "lodash";
+import { isEmpty, cloneDeep, clone } from "lodash";
 import * as differ from "./differ";
 import IdCreator from "./idCreator";
 
@@ -33,7 +33,20 @@ interface Transcoder {
 }
 
 export interface LibTopOptions {
+    /**
+     * An object that fits the Transcoder interface that will be used to encode and decode the main protocol payload
+     */
     transcoder?: Transcoder;
+
+    /**
+     * The object that is already synced from the remote host (incoming sync). Setting this will avoid unnecessary syncing.
+     */
+    initialIncObj?: Record<string, any>;
+
+    /**
+     * The object that is already synced to the remote host (outgoing sync). Setting this will avoid unnecessary syncing.
+     */
+    initialOutObj?: Record<string, any>;
 }
 
 interface FnCall {
@@ -89,9 +102,9 @@ export default class LibTop extends EventEmitter {
 
         this.transcoder = options.transcoder;
 
-        this.outObj = {};
-        this.incObj = {};
-        this.outObjSent = {};
+        this.outObj = options.initialOutObj ? cloneDeep(options.initialOutObj) : {};
+        this.incObj = options.initialIncObj ? cloneDeep(options.initialIncObj) : {};
+        this.outObjSent = options.initialOutObj ? cloneDeep(options.initialOutObj) : {};
 
         this.responses = new Map();
         this.requests = new Map();

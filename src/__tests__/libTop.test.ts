@@ -230,4 +230,50 @@ describe("LibTop roundtrip", () => {
         expect(tp2.incObj.naprej.boolean).toEqual(false);
         expect(tp2.incObj.str).toEqual("test");
     });
+
+    test("Object Syncing with preset", () => {
+        tp1 = new LibTop({
+            transcoder: tc,
+            initialOutObj: {
+                str: "abc",
+                naprej: {
+                    boolean: false,
+                },
+            },
+        });
+        tp2 = new LibTop({
+            transcoder: tc,
+            initialIncObj: {
+                str: "abc",
+                naprej: {
+                    boolean: false,
+                },
+            },
+        });
+
+        tp1.on("send", (buf) => {
+            tp2.receiveMessage(buf);
+            tp2.receiveMessageOrdered(buf);
+        });
+
+        tp2.on("send", (buf) => {
+            tp1.receiveMessage(buf);
+            tp1.receiveMessageOrdered(buf);
+        });
+
+        tp1.outObj.int = 1234;
+        tp1.outObj.naprej = {};
+        tp1.outObj.naprej.naprej = {};
+        tp1.outObj.naprej.naprej.float = 3.14;
+        tp1.outObj.bytes = Buffer.from("12345");
+        delete tp1.outObj.str;
+
+        tp1.send();
+
+        expect(tp2.incObj.int).toEqual(1234);
+        expect(tp2.incObj.naprej.naprej.float).toBeCloseTo(3.14, 3);
+        expect(tp2.incObj.bytes).toEqual(Buffer.from("12345"));
+        expect(tp2.incObj.naprej.boolean).toEqual(false);
+        expect(tp2.incObj.str).toBeUndefined();
+    });
 });
