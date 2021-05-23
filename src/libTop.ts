@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { isEmpty, cloneDeep, clone } from "lodash";
+import { isEmpty, cloneDeep } from "lodash";
 import * as differ from "./differ";
 import IdCreator from "./idCreator";
 
