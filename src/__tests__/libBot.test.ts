@@ -195,11 +195,21 @@ describe("Full cycle", () => {
             bt1.receiveMessage(msg);
         });
 
+        const inputArr: Array<Buffer> = [];
+        const outArrOrdered: Array<Buffer> = [];
+        bt2.on("messageOrdered", (buf) => {
+            outArrOrdered.push(buf);
+        });
+
         for (let i = 1; i <= 205; i++) {
-            bt1.send();
+            const a = Buffer.allocUnsafe(2);
+            a.writeUInt16LE(i);
+            inputArr.push(a);
+            bt1.send(a);
         }
 
         bt1.send();
+        inputArr.push(Buffer.allocUnsafe(0));
 
         expect(bt1.maxIncSeq).toEqual(0);
         expect(bt1.maxEmittedSeq).toEqual(0);
@@ -241,12 +251,22 @@ describe("Full cycle", () => {
             bt1.receiveMessage(msg);
         });
 
+        const inputArr: Array<Buffer> = [];
+        const outArrOrdered: Array<Buffer> = [];
+        bt2.on("messageOrdered", (buf) => {
+            outArrOrdered.push(buf);
+        });
+
         for (let i = 1; i <= 205; i++) {
-            bt1.send(Buffer.allocUnsafe(2));
+            const a = Buffer.allocUnsafe(2);
+            a.writeUInt16LE(i);
+            inputArr.push(a);
+            bt1.send(a);
         }
 
         failSome = false;
         bt1.send();
+        inputArr.push(Buffer.allocUnsafe(0));
 
         expect(bt1.maxIncSeq).toEqual(0);
         expect(bt1.maxEmittedSeq).toEqual(0);
@@ -263,5 +283,7 @@ describe("Full cycle", () => {
         expect(bt2.maxSendSeq).toEqual(0);
         // @ts-expect-error
         expect(bt2.recSeqOffset).toEqual(2);
+
+        expect(inputArr).toEqual(outArrOrdered);
     });
 });
