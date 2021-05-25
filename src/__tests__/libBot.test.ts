@@ -182,4 +182,86 @@ describe("Full cycle", () => {
         expect(bt2.maxSendSeq).toEqual(0);
         expect(outArrOrdered).toEqual(inputArr);
     });
+
+    test("SEQ looping lossless", () => {
+        const bt1 = new LibBot();
+        const bt2 = new LibBot();
+        bt1.on("send", (msg) => {
+            expect(msg[0]).toBeLessThanOrEqual(100);
+            bt2.receiveMessage(msg);
+        });
+        bt2.on("send", (msg) => {
+            expect(msg[0]).toBeLessThanOrEqual(100);
+            bt1.receiveMessage(msg);
+        });
+
+        for (let i = 1; i <= 205; i++) {
+            bt1.send();
+        }
+
+        bt1.send();
+
+        expect(bt1.maxIncSeq).toEqual(0);
+        expect(bt1.maxEmittedSeq).toEqual(0);
+        expect(bt1.maxSendAck).toEqual(0);
+        expect(bt1.failedReceiveMessageCount).toEqual(0);
+        expect(bt1.failedSendMessageCount).toEqual(0);
+        expect(bt1.maxSendSeq).toEqual(206);
+
+        expect(bt2.maxIncSeq).toEqual(206);
+        expect(bt2.maxEmittedSeq).toEqual(206);
+        expect(bt2.maxSendAck).toEqual(0);
+        expect(bt2.failedReceiveMessageCount).toEqual(0);
+        expect(bt2.failedSendMessageCount).toEqual(0);
+        expect(bt2.maxSendSeq).toEqual(0);
+        // @ts-expect-error
+        expect(bt2.recSeqOffset).toEqual(2);
+    });
+
+    test("SEQ looping lossy", () => {
+        const bt1 = new LibBot({
+            autoRetransmit: true,
+        });
+        const bt2 = new LibBot({
+            autoAckOnFailedMessages: 1,
+        });
+
+        let count = 0;
+        let failSome = true;
+        bt1.on("send", (msg) => {
+            count++;
+            if (failSome && count % 3 === 0) {
+                return;
+            }
+            expect(msg[0]).toBeLessThanOrEqual(100);
+            bt2.receiveMessage(msg);
+        });
+        bt2.on("send", (msg) => {
+            expect(msg[0]).toBeLessThanOrEqual(100);
+            bt1.receiveMessage(msg);
+        });
+
+        for (let i = 1; i <= 205; i++) {
+            bt1.send(Buffer.allocUnsafe(2));
+        }
+
+        failSome = false;
+        bt1.send();
+
+        expect(bt1.maxIncSeq).toEqual(0);
+        expect(bt1.maxEmittedSeq).toEqual(0);
+        expect(bt1.maxSendAck).toEqual(0);
+        expect(bt1.failedReceiveMessageCount).toEqual(0);
+        expect(bt1.failedSendMessageCount).toEqual(0);
+        expect(bt1.maxSendSeq).toEqual(206);
+
+        expect(bt2.maxIncSeq).toEqual(206);
+        expect(bt2.maxEmittedSeq).toEqual(206);
+        expect(bt2.maxSendAck).toEqual(0);
+        expect(bt2.failedReceiveMessageCount).toEqual(0);
+        expect(bt2.failedSendMessageCount).toEqual(0);
+        expect(bt2.maxSendSeq).toEqual(0);
+        // @ts-expect-error
+        expect(bt2.recSeqOffset).toEqual(2);
+    });
 });
