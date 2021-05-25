@@ -45,7 +45,7 @@ module.exports = {
 
     globals: {
         "ts-jest": {
-            tsConfig: `${__dirname}/tsconfig.json`,
+            tsconfig: `${__dirname}/tsconfig.json`,
 
             // https://huafu.github.io/ts-jest/user/config/diagnostics
             diagnostics: false,
