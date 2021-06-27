@@ -2,9 +2,24 @@ import { Field, loadSync as pbLoadSync, Root, Type } from "protobufjs";
 import { join } from "path";
 
 export interface PbTranscoderOptions {
+    /**
+     * Path to the .proto file. Default: "./main.proto"
+     */
     protoPath?: string;
+
+    /**
+     * Name of the type to use for syncing. Must be present in the .proto file. Default: "obj"
+     */
     syncType?: string;
+
+    /**
+     * Name of the type to use for deleting. Must be present in the .proto file. Should be the same as the type used for syncing, but with all values being booleans. Default: "objDelete"
+     */
     delType?: string;
+
+    /**
+     * Name of the enum to be used for the method name. Must be present in the .proto file. Default: "methods"
+     */
     methodEnumName?: string;
 }
 
