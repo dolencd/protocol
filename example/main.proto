@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+message obj {
+    uint32 sendInterval = 11;
+    uint32 eventAInterval = 21;
+    uint32 eventBInterval = 22;
+    uint32 callMethodAInterval = 31;
+    uint32 callMethodBInterval = 32;
+    uint32 valUpdateInterval = 41;
+
+    uint32 num = 101;
+    string str = 102;
+}
+
+message objBool {
+    bool sendInterval = 11;
+    bool eventAInterval = 21;
+    bool eventBInterval = 22;
+    bool callMethodAInterval = 31;
+    bool callMethodBInterval = 32;
+    bool valUpdateInterval = 41;
+
+    bool num = 101;
+    bool str = 102;
+}
+
+enum methods {
+    unknown = 0;
+    methodA = 1;
+    methodB = 2;
+}
