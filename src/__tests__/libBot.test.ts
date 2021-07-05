@@ -105,11 +105,10 @@ describe("Full cycle", () => {
             }
         }
 
-        const ackMsg = bt2.sendAcks();
-        const tmp1 = bt1.receiveMessage(ackMsg);
+        bt1.receiveMessage(bt2.sendAcks());
         expect(bt1.failedReceiveMessageCount).toEqual(0);
         expect(bt1.failedSendMessageCount).toEqual(6);
-        const failedMessages = bt1.sendFailedMessages()
+        const failedMessages = bt1.sendFailedMessages();
         failedMessages.map((msg) => {
             const transmissionObj = bt2.receiveMessage(msg);
 
