@@ -45,12 +45,14 @@ describe("Full cycle", () => {
         const outArr: Array<Buffer> = [];
         const outArrOrdered: Array<Buffer> = [];
         const inputArr: Array<Buffer> = [];
+        const messagesInTransit: Array<Buffer> = [];
         for (let i = 1; i < 20; i++) {
             const b = Buffer.from([i]);
-            inputArr.push(bt1.send(b));
+            inputArr.push(b);
+            messagesInTransit.push(bt1.send(b));
         }
 
-        inputArr.reverse().map((msg) => {
+        messagesInTransit.reverse().map((msg) => {
             const transmissionObj: ReceivedMessages = bt2.receiveMessage(msg);
             outArr.push(transmissionObj.newMessage);
             if (transmissionObj.ordered) {
@@ -103,10 +105,20 @@ describe("Full cycle", () => {
             }
         }
 
-        bt1.receiveMessage(bt2.sendAcks());
+        const ackMsg = bt2.sendAcks();
+        const tmp1 = bt1.receiveMessage(ackMsg);
         expect(bt1.failedReceiveMessageCount).toEqual(0);
         expect(bt1.failedSendMessageCount).toEqual(6);
-        bt1.sendFailedMessages().map(bt2.receiveMessage.bind(bt2));
+        const failedMessages = bt1.sendFailedMessages()
+        failedMessages.map((msg) => {
+            const transmissionObj = bt2.receiveMessage(msg);
+
+            if (transmissionObj.ordered) {
+                transmissionObj.ordered.map((buf) => {
+                    outArrOrdered.push(buf);
+                });
+            }
+        });
 
         expect(outArrOrdered).toEqual(inputArr);
 
@@ -153,10 +165,10 @@ describe("Full cycle", () => {
         expect(bt1.maxSendAck).toEqual(0);
         expect(bt1.failedReceiveMessageCount).toEqual(0);
         expect(bt1.failedSendMessageCount).toEqual(0);
-        expect(bt1.maxSendSeq).toEqual(206);
+        expect(bt1.maxSendSeq).toEqual(205);
 
-        expect(bt2.maxIncSeq).toEqual(206);
-        expect(bt2.maxEmittedSeq).toEqual(206);
+        expect(bt2.maxIncSeq).toEqual(205);
+        expect(bt2.maxEmittedSeq).toEqual(205);
         expect(bt2.maxSendAck).toEqual(0);
         expect(bt2.failedReceiveMessageCount).toEqual(0);
         expect(bt2.failedSendMessageCount).toEqual(0);
