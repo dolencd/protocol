@@ -32,7 +32,7 @@ export interface ReceivedMessages {
     /**
      * New message that was just received (unordered)
      */
-    newMessage: Buffer;
+    newMessage?: Buffer;
 
     /**
      * Represents messages that have been received in order.
@@ -296,7 +296,6 @@ export default class LibBot {
             this.maxIncSeq = seq;
         }
 
-        if (payload.length === 0) return null;
         if (seq !== 0) this.received.set(seq, payload);
         // emit messages that are in sequence
         const orderedMessages: Array<Buffer> = [];
@@ -315,9 +314,11 @@ export default class LibBot {
         ) {
             output.push(this.sendAcks());
         } 
-        return [output, {
-            newMessage: payload,
-            ordered: orderedMessages,
-        }];
+
+        const outputReceivedMessages: ReceivedMessages = {}
+        if (payload.length > 0) outputReceivedMessages.newMessage = payload
+        if (orderedMessages.length > 0) outputReceivedMessages.ordered = orderedMessages
+
+        return [output, outputReceivedMessages];
     }
 }

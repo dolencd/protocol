@@ -117,6 +117,7 @@ describe("Full cycle", () => {
         expect(bt1.failedReceiveMessageCount).toEqual(0);
         expect(bt1.failedSendMessageCount).toEqual(6);
         const failedMessages = bt1.sendFailedMessages();
+        expect(failedMessages.length).toEqual(6);
         failedMessages.map((msg) => {
             const [_, transmissionObj] = bt2.receiveMessage(msg);
 
@@ -126,11 +127,6 @@ describe("Full cycle", () => {
                 });
             }
         });
-        const retransmitArr = bt1.sendFailedMessages()
-        retransmitArr.map((msg) => {
-            bt2.receiveMessage(msg);
-        })
-        expect(retransmitArr.length).toEqual(6);
 
         expect(outArrOrdered).toEqual(inputArr);
 
