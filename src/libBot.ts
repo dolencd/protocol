@@ -229,7 +229,6 @@ export default class LibBot {
      * @returns An array of messages to send and the processed received messages
      */
     receiveMessage(buf: Buffer): [Array<Buffer>, ReceivedMessages | null] {
-
         const output: Array<Buffer> = [];
 
         // eslint-disable-next-line prefer-const
@@ -283,7 +282,7 @@ export default class LibBot {
             // done incoming acks
 
             if (this.options.autoRetransmit && this.failedSendMessageCount > 0) {
-                this.sendFailedMessages().map((b) => output.push(b))
+                this.sendFailedMessages().map((b) => output.push(b));
             }
         }
 
@@ -308,16 +307,16 @@ export default class LibBot {
         // Send acks if this.autoAckAfterMessages messages have been received without an acknowledgement being sent
         if (
             (this.options.autoAckAfterMessages &&
-            this.maxIncSeq - this.maxSendAck >= this.options.autoAckAfterMessages) ||
+                this.maxIncSeq - this.maxSendAck >= this.options.autoAckAfterMessages) ||
             (this.options.autoAckOnFailedMessages &&
                 this.failedReceiveMessageCount >= this.options.autoAckOnFailedMessages)
         ) {
             output.push(this.sendAcks());
-        } 
+        }
 
-        const outputReceivedMessages: ReceivedMessages = {}
-        if (payload.length > 0) outputReceivedMessages.newMessage = payload
-        if (orderedMessages.length > 0) outputReceivedMessages.ordered = orderedMessages
+        const outputReceivedMessages: ReceivedMessages = {};
+        if (payload.length > 0) outputReceivedMessages.newMessage = payload;
+        if (orderedMessages.length > 0) outputReceivedMessages.ordered = orderedMessages;
 
         return [output, outputReceivedMessages];
     }

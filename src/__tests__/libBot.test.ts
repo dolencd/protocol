@@ -11,7 +11,7 @@ describe("Full cycle", () => {
         for (let i = 1; i < 20; i++) {
             const b = Buffer.from([i]);
             inputArr.push(b);
-            const [_, transmissionObj] = bt2.receiveMessage(bt1.send(b));
+            const [, transmissionObj] = bt2.receiveMessage(bt1.send(b));
             outArr.push(transmissionObj.newMessage);
             if (transmissionObj.ordered) {
                 transmissionObj.ordered.map((buf) => {
@@ -53,7 +53,7 @@ describe("Full cycle", () => {
         }
 
         messagesInTransit.reverse().map((msg) => {
-            const [_, transmissionObj] = bt2.receiveMessage(msg);
+            const [, transmissionObj] = bt2.receiveMessage(msg);
             outArr.push(transmissionObj.newMessage);
             if (transmissionObj.ordered) {
                 transmissionObj.ordered.map((buf) => {
@@ -100,7 +100,7 @@ describe("Full cycle", () => {
                 continue;
             }
 
-            const [_, transmissionObj] = bt2.receiveMessage(msg);
+            const [, transmissionObj] = bt2.receiveMessage(msg);
 
             if (transmissionObj.ordered) {
                 transmissionObj.ordered.map((buf) => {
@@ -119,7 +119,7 @@ describe("Full cycle", () => {
         const failedMessages = bt1.sendFailedMessages();
         expect(failedMessages.length).toEqual(6);
         failedMessages.map((msg) => {
-            const [_, transmissionObj] = bt2.receiveMessage(msg);
+            const [, transmissionObj] = bt2.receiveMessage(msg);
 
             if (transmissionObj.ordered) {
                 transmissionObj.ordered.map((buf) => {
@@ -159,7 +159,7 @@ describe("Full cycle", () => {
             inputArr.push(a);
             const msg = bt1.send(a);
             expect(msg[0]).toBeLessThanOrEqual(100);
-            const [_, transmissionObj] = bt2.receiveMessage(msg);
+            const [, transmissionObj] = bt2.receiveMessage(msg);
 
             if (transmissionObj.ordered) {
                 transmissionObj.ordered.map((buf) => {
@@ -214,12 +214,12 @@ describe("Full cycle", () => {
                     outArrOrdered.push(buf);
                 });
             }
-
-            messagesToSend.map((msg) => {
+            // eslint-disable-next-line no-loop-func
+            messagesToSend.map((m) => {
                 count++;
                 if (count % 3 === 0) return;
-                bt2.receiveMessage(msg);
-            })
+                bt2.receiveMessage(m);
+            });
 
             if (bt2.failedReceiveMessageCount > 1) {
                 count++;
