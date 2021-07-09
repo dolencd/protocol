@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import LibBot, { LibBotOptions } from "./libBot";
+import LibBot, { LibBotOptions, ReceivedMessages } from "./libBot";
 import LibTop, { LibTopOptions } from "./libTop";
 import { PbTranscoderOptions } from "./PbTranscoder";
 
@@ -33,6 +33,8 @@ export class Protocol extends EventEmitter {
 
     private bt?: LibBot;
 
+    private options: ProtocolOptions;
+
     /**
      * Initialise the Protocol class. It is not recommended to use this directly.
      * @param options {ProtocolOptions}
@@ -40,6 +42,7 @@ export class Protocol extends EventEmitter {
     constructor(options: ProtocolOptions) {
         super();
 
+        this.options = options;
         this.tp = new LibTop(options);
 
         // tp event bindings
@@ -49,9 +52,6 @@ export class Protocol extends EventEmitter {
 
         if (options.enableOrdering) {
             this.bt = new LibBot();
-            this.bt.on("send", this.emit.bind(this, "send"));
-            this.bt.on("message", this.tp.receiveMessage.bind(this.tp));
-            this.bt.on("messageOrdered", this.tp.receiveMessageOrdered.bind(this.tp));
         } else {
             this.tp.on("send", this.emit.bind(this, "send"));
         }
@@ -104,14 +104,15 @@ export class Protocol extends EventEmitter {
     /**
      * Package all data and get a Buffer to send to the other side.
      * @function send
-     * @returns {Buffer} Buffer to send to other side
+     * @returns {Array<Buffer>} Array of Buffers to send to other side
      */
     send(): Buffer {
-        if (!this.bt) {
+        if (!this.options.enableOrdering) {
             return this.tp.send();
         }
-
-        return this.bt.send(this.tp.send());
+        const msg = this.bt.send(this.tp.send());
+        this.emit("send", msg);
+        return msg;
     }
 
     /**
@@ -120,13 +121,36 @@ export class Protocol extends EventEmitter {
      * @param  {Buffer} event Event to send in the shape of a Buffer
      * @returns  {void}
      */
-    receiveMessage(event: Buffer): void {
-        if (this.bt) {
-            this.bt.receiveMessage.call(this.bt, event);
-            return;
+    receiveMessage(event: Buffer): Array<Buffer> {
+        if (!this.options.enableOrdering) {
+            // LibBot is disabled. There are no acks or retransmitted messages.
+            if (event.length === 0) return [];
+            this.tp.receiveMessage.call(this.tp, event);
+            this.tp.receiveMessageOrdered.call(this.tp, event);
+            return [];
         }
-        this.tp.receiveMessage.call(this.tp, event);
-        this.tp.receiveMessageOrdered.call(this.tp, event);
+
+        const [messages, processedMessage]: [Array<Buffer>, ReceivedMessages] = this.bt.receiveMessage.call(
+            this.bt,
+            event
+        );
+
+        if (processedMessage.newMessage) {
+            this.tp.receiveMessage.call(this.tp, processedMessage.newMessage);
+        }
+
+        if (processedMessage.ordered) {
+            processedMessage.ordered.map((msg) => {
+                this.tp.receiveMessageOrdered(msg);
+            });
+        }
+
+        if (messages)
+            messages.map((msg) => {
+                this.emit("send", msg);
+            });
+
+        return messages;
     }
 
     /**
