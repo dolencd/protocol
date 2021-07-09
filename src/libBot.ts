@@ -10,17 +10,20 @@ function adaptOffset(n: number) {
 
 export interface LibBotOptions {
     /**
-     * When a delivery failure is detected, immediately retransmit the message.
+     * When a delivery failure is detected (when calling receiveMessage), immediately return all messages that have not been successfully delivered.
+     * Default: false
      */
     autoRetransmit?: boolean;
 
     /**
-     * Automatically call sendAcks if n or more messages have been received since last sending acks.
+     * Automatically return acks (by internally calling sendAcks) when calling receiveMessage if n or more messages have been received since last sending acks.
+     * Default: off
      */
     autoAckAfterMessages?: number;
 
     /**
-     * Automatically call sendAcks if n or more incoming messages have been lost before being received.
+     * Automatically return acks (by internally calling sendAcks) when calling receiveMessage if n or more incoming messages have been lost before being received.
+     * Default: off
      */
     autoAckOnFailedMessages?: number;
 }
@@ -223,9 +226,12 @@ export default class LibBot {
      * A new message has been received from the other side
      * @function receiveMessage
      * @param  {Buffer} message
-     * @returns void
+     * @returns An array of messages to send and the processed received messages
      */
-    receiveMessage(buf: Buffer): ReceivedMessages | null {
+    receiveMessage(buf: Buffer): [Array<Buffer>, ReceivedMessages | null] {
+
+        const output: Array<Buffer> = [];
+
         // eslint-disable-next-line prefer-const
         let [seq, acks, payload] = tc.decodeSeqAck(buf);
         // console.log(`bot received message seq:${seq} plen:${payload.length} acks:`, acks);
@@ -276,14 +282,14 @@ export default class LibBot {
             // );
             // done incoming acks
 
-            // if (this.options.autoRetransmit && this.failedSendMessageCount > 0) {
-            //     this.sendFailedMessages();
-            // }
+            if (this.options.autoRetransmit && this.failedSendMessageCount > 0) {
+                this.sendFailedMessages().map((b) => output.push(b))
+            }
         }
 
         if (seq <= this.maxEmittedSeq) {
             // // console.log(`bot got old message seq:${seq}, maxEmit:${this.maxEmittedSeq}`)
-            return null;
+            return [[], null];
         }
 
         if (seq > this.maxIncSeq) {
@@ -301,24 +307,17 @@ export default class LibBot {
         }
 
         // Send acks if this.autoAckAfterMessages messages have been received without an acknowledgement being sent
-        // if (
-        //     this.options.autoAckAfterMessages &&
-        //     this.maxIncSeq - this.maxSendAck >= this.options.autoAckAfterMessages
-        // ) {
-        //     this.sendAcks();
-        // }
-
-        // Send acks if this.autoAckOnFailedMessages messages are known to be missing
-        // if (
-        //     this.options.autoAckOnFailedMessages &&
-        //     this.failedReceiveMessageCount >= this.options.autoAckOnFailedMessages
-        // ) {
-        //     this.sendAcks();
-        // }
-
-        return {
+        if (
+            (this.options.autoAckAfterMessages &&
+            this.maxIncSeq - this.maxSendAck >= this.options.autoAckAfterMessages) ||
+            (this.options.autoAckOnFailedMessages &&
+                this.failedReceiveMessageCount >= this.options.autoAckOnFailedMessages)
+        ) {
+            output.push(this.sendAcks());
+        } 
+        return [output, {
             newMessage: payload,
             ordered: orderedMessages,
-        };
+        }];
     }
 }

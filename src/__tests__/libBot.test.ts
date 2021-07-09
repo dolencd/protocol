@@ -1,3 +1,4 @@
+import { BufferWriter } from "protobufjs";
 import LibBot, { ReceivedMessages } from "../libBot";
 
 describe("Full cycle", () => {
@@ -11,7 +12,7 @@ describe("Full cycle", () => {
         for (let i = 1; i < 20; i++) {
             const b = Buffer.from([i]);
             inputArr.push(b);
-            const transmissionObj = bt2.receiveMessage(bt1.send(b));
+            const [_, transmissionObj] = bt2.receiveMessage(bt1.send(b));
             outArr.push(transmissionObj.newMessage);
             if (transmissionObj.ordered) {
                 transmissionObj.ordered.map((buf) => {
@@ -53,7 +54,7 @@ describe("Full cycle", () => {
         }
 
         messagesInTransit.reverse().map((msg) => {
-            const transmissionObj: ReceivedMessages = bt2.receiveMessage(msg);
+            const [_, transmissionObj] = bt2.receiveMessage(msg);
             outArr.push(transmissionObj.newMessage);
             if (transmissionObj.ordered) {
                 transmissionObj.ordered.map((buf) => {
@@ -81,8 +82,12 @@ describe("Full cycle", () => {
     });
 
     test("Retransmission", (done) => {
-        const bt1 = new LibBot();
-        const bt2 = new LibBot();
+        const bt1 = new LibBot({
+            autoRetransmit: false,
+        });
+        const bt2 = new LibBot({
+            autoAckOnFailedMessages: 1,
+        });
 
         const outArrOrdered: Array<Buffer> = [];
         const inputArr: Array<Buffer> = [];
@@ -96,7 +101,7 @@ describe("Full cycle", () => {
                 continue;
             }
 
-            const transmissionObj = bt2.receiveMessage(msg);
+            const [_, transmissionObj] = bt2.receiveMessage(msg);
 
             if (transmissionObj.ordered) {
                 transmissionObj.ordered.map((buf) => {
@@ -105,12 +110,16 @@ describe("Full cycle", () => {
             }
         }
 
+        expect(bt1.failedReceiveMessageCount).toEqual(0);
+        expect(bt1.failedSendMessageCount).toEqual(0);
+        expect(bt2.failedReceiveMessageCount).toEqual(6);
+        expect(bt2.failedSendMessageCount).toEqual(0);
         bt1.receiveMessage(bt2.sendAcks());
         expect(bt1.failedReceiveMessageCount).toEqual(0);
         expect(bt1.failedSendMessageCount).toEqual(6);
         const failedMessages = bt1.sendFailedMessages();
         failedMessages.map((msg) => {
-            const transmissionObj = bt2.receiveMessage(msg);
+            const [_, transmissionObj] = bt2.receiveMessage(msg);
 
             if (transmissionObj.ordered) {
                 transmissionObj.ordered.map((buf) => {
@@ -118,6 +127,11 @@ describe("Full cycle", () => {
                 });
             }
         });
+        const retransmitArr = bt1.sendFailedMessages()
+        retransmitArr.map((msg) => {
+            bt2.receiveMessage(msg);
+        })
+        expect(retransmitArr.length).toEqual(6);
 
         expect(outArrOrdered).toEqual(inputArr);
 
@@ -150,7 +164,7 @@ describe("Full cycle", () => {
             inputArr.push(a);
             const msg = bt1.send(a);
             expect(msg[0]).toBeLessThanOrEqual(100);
-            const transmissionObj = bt2.receiveMessage(msg);
+            const [_, transmissionObj] = bt2.receiveMessage(msg);
 
             if (transmissionObj.ordered) {
                 transmissionObj.ordered.map((buf) => {
@@ -179,8 +193,12 @@ describe("Full cycle", () => {
     });
 
     test("SEQ looping lossy", () => {
-        const bt1 = new LibBot();
-        const bt2 = new LibBot();
+        const bt1 = new LibBot({
+            autoRetransmit: true,
+        });
+        const bt2 = new LibBot({
+            autoAckOnFailedMessages: 1,
+        });
 
         const inputArr: Array<Buffer> = [];
         const outArrOrdered: Array<Buffer> = [];
@@ -195,12 +213,18 @@ describe("Full cycle", () => {
 
             count++;
             if (count % 3 === 0) return;
-            const transmissionObj = bt2.receiveMessage(msg);
+            const [messagesToSend, transmissionObj] = bt2.receiveMessage(msg);
             if (transmissionObj.ordered) {
                 transmissionObj.ordered.map((buf) => {
                     outArrOrdered.push(buf);
                 });
             }
+
+            messagesToSend.map((msg) => {
+                count++;
+                if (count % 3 === 0) return;
+                bt2.receiveMessage(msg);
+            })
 
             if (bt2.failedReceiveMessageCount > 1) {
                 count++;
