@@ -1,5 +1,4 @@
-import { BufferWriter } from "protobufjs";
-import LibBot, { ReceivedMessages } from "../libBot";
+import LibBot from "../libBot";
 
 describe("Full cycle", () => {
     test("Perfect transmission", () => {
