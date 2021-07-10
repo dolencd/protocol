@@ -5,21 +5,19 @@ describe("Full cycle", () => {
         const bt1 = new LibBot();
         const bt2 = new LibBot();
 
-        bt1.on("send", bt2.receiveMessage.bind(bt2));
-
         const outArr: Array<Buffer> = [];
-        bt2.on("message", (buf) => {
-            outArr.push(buf);
-        });
         const outArrOrdered: Array<Buffer> = [];
-        bt2.on("messageOrdered", (buf) => {
-            outArrOrdered.push(buf);
-        });
         const inputArr: Array<Buffer> = [];
         for (let i = 1; i < 20; i++) {
             const b = Buffer.from([i]);
             inputArr.push(b);
-            bt1.send(b);
+            const [, transmissionObj] = bt2.receiveMessage(bt1.send(b));
+            outArr.push(transmissionObj.newMessage);
+            if (transmissionObj.ordered) {
+                transmissionObj.ordered.map((buf) => {
+                    outArrOrdered.push(buf);
+                });
+            }
         }
 
         expect(outArr).toEqual(inputArr);
@@ -44,27 +42,25 @@ describe("Full cycle", () => {
         const bt1 = new LibBot();
         const bt2 = new LibBot();
 
-        const messagesInTransit: Array<Buffer> = [];
-        bt1.on("send", (msg: Buffer) => {
-            messagesInTransit.unshift(msg);
-        });
-
         const outArr: Array<Buffer> = [];
-        bt2.on("message", (buf) => {
-            outArr.push(buf);
-        });
         const outArrOrdered: Array<Buffer> = [];
-        bt2.on("messageOrdered", (buf) => {
-            outArrOrdered.push(buf);
-        });
         const inputArr: Array<Buffer> = [];
+        const messagesInTransit: Array<Buffer> = [];
         for (let i = 1; i < 20; i++) {
             const b = Buffer.from([i]);
             inputArr.push(b);
-            bt1.send(b);
+            messagesInTransit.push(bt1.send(b));
         }
 
-        messagesInTransit.map(bt2.receiveMessage.bind(bt2));
+        messagesInTransit.reverse().map((msg) => {
+            const [, transmissionObj] = bt2.receiveMessage(msg);
+            outArr.push(transmissionObj.newMessage);
+            if (transmissionObj.ordered) {
+                transmissionObj.ordered.map((buf) => {
+                    outArrOrdered.push(buf);
+                });
+            }
+        });
 
         expect(outArrOrdered).toEqual(inputArr);
         expect(outArr).toEqual(inputArr.reverse());
@@ -85,40 +81,52 @@ describe("Full cycle", () => {
     });
 
     test("Retransmission", (done) => {
-        const bt1 = new LibBot();
-        const bt2 = new LibBot();
-
-        let failSomeMessages = true;
-
-        let count = 0;
-        bt1.on("send", (msg) => {
-            count++;
-            if (failSomeMessages && count % 3 === 0) {
-                return;
-            }
-            bt2.receiveMessage.call(bt2, msg);
+        const bt1 = new LibBot({
+            autoRetransmit: false,
         });
-        bt2.on("send", bt1.receiveMessage.bind(bt1));
+        const bt2 = new LibBot({
+            autoAckOnFailedMessages: 1,
+        });
 
         const outArrOrdered: Array<Buffer> = [];
-        bt2.on("messageOrdered", (buf) => {
-            outArrOrdered.push(buf);
-        });
-
         const inputArr: Array<Buffer> = [];
+        let count = 0;
         for (let i = 1; i < 20; i++) {
             const b = Buffer.from([i]);
             inputArr.push(b);
-            bt1.send(b);
+            count++;
+            const msg = bt1.send(b);
+            if (count % 3 === 0) {
+                continue;
+            }
+
+            const [, transmissionObj] = bt2.receiveMessage(msg);
+
+            if (transmissionObj.ordered) {
+                transmissionObj.ordered.map((buf) => {
+                    outArrOrdered.push(buf);
+                });
+            }
         }
 
-        // disable bad network
-        failSomeMessages = false;
-        // inform
-        bt2.sendAcks();
+        expect(bt1.failedReceiveMessageCount).toEqual(0);
+        expect(bt1.failedSendMessageCount).toEqual(0);
+        expect(bt2.failedReceiveMessageCount).toEqual(6);
+        expect(bt2.failedSendMessageCount).toEqual(0);
+        bt1.receiveMessage(bt2.sendAcks());
         expect(bt1.failedReceiveMessageCount).toEqual(0);
         expect(bt1.failedSendMessageCount).toEqual(6);
-        bt1.sendFailedMessages();
+        const failedMessages = bt1.sendFailedMessages();
+        expect(failedMessages.length).toEqual(6);
+        failedMessages.map((msg) => {
+            const [, transmissionObj] = bt2.receiveMessage(msg);
+
+            if (transmissionObj.ordered) {
+                transmissionObj.ordered.map((buf) => {
+                    outArrOrdered.push(buf);
+                });
+            }
+        });
 
         expect(outArrOrdered).toEqual(inputArr);
 
@@ -138,94 +146,45 @@ describe("Full cycle", () => {
         done();
     });
 
-    test("Retransmission", () => {
-        const bt1 = new LibBot({
-            autoRetransmit: true,
-        });
-        const bt2 = new LibBot({
-            autoAckOnFailedMessages: 1,
-        });
-        let count = 0;
-        bt1.on("send", (msg) => {
-            count++;
-            if (count % 5 === 0) {
-                return;
-            }
-            bt2.receiveMessage.call(bt2, msg);
-        });
-        bt2.on("send", bt1.receiveMessage.bind(bt1));
-
-        const outArrOrdered: Array<Buffer> = [];
-        bt2.on("messageOrdered", (buf) => {
-            outArrOrdered.push(buf);
-        });
-
-        const inputArr: Array<Buffer> = [];
-        for (let i = 1; i < 20; i++) {
-            const b = Buffer.from([i]);
-            inputArr.push(b);
-            bt1.send(b);
-        }
-
-        expect(bt1.maxIncSeq).toEqual(0);
-        expect(bt1.maxEmittedSeq).toEqual(0);
-        expect(bt1.maxSendAck).toEqual(0);
-        expect(bt1.failedReceiveMessageCount).toEqual(0);
-        expect(bt1.failedSendMessageCount).toEqual(0);
-        expect(bt1.maxSendSeq).toEqual(19);
-
-        expect(bt2.maxIncSeq).toEqual(19);
-        expect(bt2.maxEmittedSeq).toEqual(19);
-        expect(bt2.maxSendAck).toEqual(0);
-        expect(bt2.failedReceiveMessageCount).toEqual(0);
-        expect(bt2.failedSendMessageCount).toEqual(0);
-        expect(bt2.maxSendSeq).toEqual(0);
-        expect(outArrOrdered).toEqual(inputArr);
-    });
-
     test("SEQ looping lossless", () => {
         const bt1 = new LibBot();
         const bt2 = new LibBot();
-        bt1.on("send", (msg) => {
-            expect(msg[0]).toBeLessThanOrEqual(100);
-            bt2.receiveMessage(msg);
-        });
-        bt2.on("send", (msg) => {
-            expect(msg[0]).toBeLessThanOrEqual(100);
-            bt1.receiveMessage(msg);
-        });
 
         const inputArr: Array<Buffer> = [];
         const outArrOrdered: Array<Buffer> = [];
-        bt2.on("messageOrdered", (buf) => {
-            outArrOrdered.push(buf);
-        });
 
         for (let i = 1; i <= 205; i++) {
             const a = Buffer.allocUnsafe(2);
             a.writeUInt16LE(i);
             inputArr.push(a);
-            bt1.send(a);
-        }
+            const msg = bt1.send(a);
+            expect(msg[0]).toBeLessThanOrEqual(100);
+            const [, transmissionObj] = bt2.receiveMessage(msg);
 
-        bt1.send();
-        inputArr.push(Buffer.allocUnsafe(0));
+            if (transmissionObj.ordered) {
+                transmissionObj.ordered.map((buf) => {
+                    outArrOrdered.push(buf);
+                });
+            }
+        }
 
         expect(bt1.maxIncSeq).toEqual(0);
         expect(bt1.maxEmittedSeq).toEqual(0);
         expect(bt1.maxSendAck).toEqual(0);
         expect(bt1.failedReceiveMessageCount).toEqual(0);
         expect(bt1.failedSendMessageCount).toEqual(0);
-        expect(bt1.maxSendSeq).toEqual(206);
+        expect(bt1.maxSendSeq).toEqual(205);
 
-        expect(bt2.maxIncSeq).toEqual(206);
-        expect(bt2.maxEmittedSeq).toEqual(206);
+        expect(bt2.maxIncSeq).toEqual(205);
+        expect(bt2.maxEmittedSeq).toEqual(205);
         expect(bt2.maxSendAck).toEqual(0);
         expect(bt2.failedReceiveMessageCount).toEqual(0);
         expect(bt2.failedSendMessageCount).toEqual(0);
         expect(bt2.maxSendSeq).toEqual(0);
         // @ts-expect-error
         expect(bt2.recSeqOffset).toEqual(2);
+
+        expect(inputArr).toEqual(outArrOrdered);
     });
 
     test("SEQ looping lossy", () => {
@@ -236,37 +195,44 @@ describe("Full cycle", () => {
             autoAckOnFailedMessages: 1,
         });
 
-        let count = 0;
-        let failSome = true;
-        bt1.on("send", (msg) => {
-            count++;
-            if (failSome && count % 3 === 0) {
-                return;
-            }
-            expect(msg[0]).toBeLessThanOrEqual(100);
-            bt2.receiveMessage(msg);
-        });
-        bt2.on("send", (msg) => {
-            expect(msg[0]).toBeLessThanOrEqual(100);
-            bt1.receiveMessage(msg);
-        });
-
         const inputArr: Array<Buffer> = [];
         const outArrOrdered: Array<Buffer> = [];
-        bt2.on("messageOrdered", (buf) => {
-            outArrOrdered.push(buf);
-        });
 
+        let count = 0;
         for (let i = 1; i <= 205; i++) {
             const a = Buffer.allocUnsafe(2);
             a.writeUInt16LE(i);
             inputArr.push(a);
-            bt1.send(a);
-        }
+            const msg = bt1.send(a);
+            expect(msg[0]).toBeLessThanOrEqual(100);
 
-        failSome = false;
-        bt1.send();
-        inputArr.push(Buffer.allocUnsafe(0));
+            count++;
+            if (count % 3 === 0) return;
+            const [messagesToSend, transmissionObj] = bt2.receiveMessage(msg);
+            if (transmissionObj.ordered) {
+                transmissionObj.ordered.map((buf) => {
+                    outArrOrdered.push(buf);
+                });
+            }
+            // eslint-disable-next-line no-loop-func
+            messagesToSend.map((m) => {
+                count++;
+                if (count % 3 === 0) return;
+                bt2.receiveMessage(m);
+            });
+
+            if (bt2.failedReceiveMessageCount > 1) {
+                count++;
+                if (count % 3 === 0) continue;
+                bt2.receiveMessage(bt1.sendAcks());
+                // eslint-disable-next-line no-loop-func
+                bt1.sendFailedMessages().map((m) => {
+                    count++;
+                    if (count % 3 === 0) return;
+                    bt2.receiveMessage(m);
+                });
+            }
+        }
 
         expect(bt1.maxIncSeq).toEqual(0);
         expect(bt1.maxEmittedSeq).toEqual(0);
