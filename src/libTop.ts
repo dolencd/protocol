@@ -53,9 +53,8 @@ interface FnCall {
     id: number;
     args?: Buffer;
     method: string;
-    resolve: Function;
-    reject: Function;
     sent: boolean;
+    result?: RpcResObj;
 }
 
 function removeUndefinedAndEmpty(o: Record<string, any>) {
@@ -157,11 +156,7 @@ export default class LibTop extends EventEmitter {
                 return;
             }
 
-            if (returnsObj.isError === true) {
-                callObj.reject(returnsObj.returns || Buffer.allocUnsafe(0));
-            } else {
-                callObj.resolve(returnsObj.returns || Buffer.allocUnsafe(0));
-            }
+            callObj.result = returnsObj;
 
             this.requests.delete(id);
             this.requestsOrdered.delete(id);
@@ -237,36 +232,30 @@ export default class LibTop extends EventEmitter {
         }
     }
 
-    callFn(method: string, args?: Buffer): Promise<Buffer> {
+    callFn(method: string, args?: Buffer): number {
         const id = this.idCreator.next();
-        // console.log(`top fn called id:${id}`)
 
-        return new Promise((resolve, reject) => {
-            this.requests.set(id, {
-                method,
-                args,
-                resolve,
-                reject,
-                id,
-                sent: false,
-            });
+        this.requests.set(id, {
+            method,
+            args,
+            id,
+            sent: false,
         });
+
+        return id;
     }
 
-    callFnOrdered(method: string, args?: Buffer): Promise<Buffer> {
+    callFnOrdered(method: string, args?: Buffer): number {
         const id = this.idCreator.next();
-        // console.log(`top fn called id:${id}`)
 
-        return new Promise((resolve, reject) => {
             this.requestsOrdered.set(id, {
                 method,
                 args,
-                resolve,
-                reject,
                 id,
                 sent: false,
             });
-        });
+        
+        return id;
     }
 
     /**
