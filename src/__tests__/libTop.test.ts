@@ -368,4 +368,118 @@ describe("LibTop roundtrip", () => {
         expect(tp2.incObj.naprej.boolean).toEqual(false);
         expect(tp2.incObj.str).toBeUndefined();
     });
+
+    test("serialization", () => {
+        tp1.callFn("sum", Buffer.from("1234"));
+        tp1.callFn("add");
+        tp1.callFnOrdered("sum", Buffer.from("1234"));
+        tp1.callFnOrdered("add");
+        tp1.sendEvent(Buffer.from("12"));
+        tp1.sendEvent(Buffer.from("34"));
+        tp1.sendEventOrdered(Buffer.from("12"));
+        tp1.sendEventOrdered(Buffer.from("34"));
+        tp1.outObj.int = 1234;
+        tp1.outObj.naprej = {};
+        tp1.outObj.naprej.naprej = {};
+        tp1.outObj.naprej.naprej.float = 3.14;
+        tp1.outObj.bytes = Buffer.from("12345");
+        tp1.outObj.naprej.boolean = false;
+        tp1.outObj.str = "test";
+
+        const serializedState = tp1.getLibState();
+
+        const newtp1 = new LibTop({
+            transcoder: tc,
+            restoreState: serializedState,
+        });
+
+        expect(newtp1).toEqual(tp1);
+
+        expect(newtp1.send()).toEqual(tp1.send());
+    });
+
+    test("serialization with function calls", () => {
+        expect(tp1.callFn("add", Buffer.from("12345"))).toEqual(1);
+        expect(tp1.callFn("sum")).toEqual(2);
+        expect(tp1.callFnOrdered("sum", Buffer.from("12345"))).toEqual(3);
+        expect(tp1.callFnOrdered("add")).toEqual(4);
+
+        tp1 = new LibTop({
+            transcoder: tc,
+            restoreState: tp1.getLibState(),
+        });
+
+        const incMsg = tp2.receiveMessage(tp1.send()[0]);
+        expect(incMsg).toEqual({
+            rpcCalls: [
+                {
+                    id: 1,
+                    method: "add",
+                    args: Buffer.from("12345"),
+                },
+                {
+                    id: 2,
+                    method: "sum",
+                },
+                {
+                    id: 3,
+                    method: "sum",
+                    args: Buffer.from("12345"),
+                },
+                {
+                    id: 4,
+                    method: "add",
+                },
+            ],
+        });
+        incMsg.rpcCalls.map(({ id, method, args }) => {
+            if (method === "add")
+                tp2.sendFnCallResponse(id, Buffer.concat([Buffer.from([0, 0]), args || Buffer.allocUnsafe(0)]));
+            if (method === "sum")
+                tp2.sendFnCallResponse(id, Buffer.concat([Buffer.from([0, 0]), args || Buffer.allocUnsafe(0)]));
+        });
+        tp1 = new LibTop({
+            transcoder: tc,
+            restoreState: tp1.getLibState(),
+        });
+        tp2 = new LibTop({
+            transcoder: tc,
+            restoreState: tp2.getLibState(),
+        });
+        const tmp = tp1.receiveMessage(tp2.send()[0]);
+        expect(tmp).toEqual({
+            rpcResults: [
+                {
+                    method: "add",
+                    args: Buffer.from("12345"),
+                    id: 1,
+                    result: {
+                        returns: Buffer.concat([Buffer.alloc(2), Buffer.from("12345")]),
+                    },
+                },
+                {
+                    method: "sum",
+                    id: 2,
+                    result: {
+                        returns: Buffer.alloc(2),
+                    },
+                },
+                {
+                    method: "sum",
+                    args: Buffer.from("12345"),
+                    id: 3,
+                    result: {
+                        returns: Buffer.concat([Buffer.alloc(2), Buffer.from("12345")]),
+                    },
+                },
+                {
+                    method: "add",
+                    id: 4,
+                    result: {
+                        returns: Buffer.alloc(2),
+                    },
+                },
+            ],
+        });
+    });
 });

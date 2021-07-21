@@ -2,6 +2,7 @@ import { isEmpty, cloneDeep } from "lodash";
 import { ReceivedMessages } from "./libBot";
 import * as differ from "./differ";
 import IdCreator from "./idCreator";
+import { stringify as serializerStringify, parse as serializerParse } from "./serializer";
 
 interface RpcReqObj {
     method: string;
@@ -50,15 +51,34 @@ export interface LibTopOptions {
     transcoder?: Transcoder;
 
     /**
-     * The object that is already synced from the remote host (incoming sync). Setting this will avoid unnecessary syncing.
+     * The object that is already synced from the remote host (incoming sync). Setting this will avoid unnecessary syncing. Ignored if restoreState is used.
      */
     initialIncObj?: Record<string, any>;
 
     /**
-     * The object that is already synced to the remote host (outgoing sync). Setting this will avoid unnecessary syncing.
+     * The object that is already synced to the remote host (outgoing sync). Setting this will avoid unnecessary syncing. Ignored if restoreState is used.
      */
     initialOutObj?: Record<string, any>;
+
+    /**
+     * Restore state of old LibTop instance
+     */
+    restoreState?: string;
 }
+
+// export interface LibTopState {
+//     idMin: number;
+//     idMax: number;
+//     idCur: number;
+//     incObj: Record<string, any>;
+//     outObj: Record<string, any>;
+//     outObjSent: Record<string, any>;
+//     responses: Map<number, FnCall>;
+//     requests: Map<number, FnCall>;
+//     requestsOrdered: Map<number, FnCall>;
+//     events: Array<Buffer>;
+//     eventsOrdered: Array<Buffer>;
+// }
 
 export interface FnCall {
     id: number;
@@ -107,19 +127,49 @@ export default class LibTop {
     transcoder: Transcoder;
 
     constructor(options: LibTopOptions) {
-        this.idCreator = new IdCreator(1, 65530);
-
         this.transcoder = options.transcoder;
 
-        this.outObj = options.initialOutObj ? cloneDeep(options.initialOutObj) : {};
-        this.incObj = options.initialIncObj ? cloneDeep(options.initialIncObj) : {};
-        this.outObjSent = cloneDeep(this.outObj);
+        if (options.restoreState) {
+            const rs = serializerParse(options.restoreState);
+            this.idCreator = new IdCreator(rs.idCur, rs.idMin, rs.idMax);
 
-        this.responses = new Map();
-        this.requests = new Map();
-        this.requestsOrdered = new Map();
-        this.events = [];
-        this.eventsOrdered = [];
+            this.outObj = rs.outObj;
+            this.incObj = rs.incObj;
+            this.outObjSent = rs.outObjSent;
+
+            this.responses = rs.responses;
+            this.requests = rs.requests;
+            this.requestsOrdered = rs.requestsOrdered;
+            this.events = rs.events;
+            this.eventsOrdered = rs.eventsOrdered;
+        } else {
+            this.idCreator = new IdCreator(1, 1, 65530);
+            this.outObj = options.initialOutObj ? cloneDeep(options.initialOutObj) : {};
+            this.incObj = options.initialIncObj ? cloneDeep(options.initialIncObj) : {};
+            this.outObjSent = cloneDeep(this.outObj);
+
+            this.responses = new Map();
+            this.requests = new Map();
+            this.requestsOrdered = new Map();
+            this.events = [];
+            this.eventsOrdered = [];
+        }
+    }
+
+    getLibState(): string {
+        return serializerStringify({
+            idMin: this.idCreator.min,
+            idMax: this.idCreator.max,
+            idCur: this.idCreator.cur,
+            outObj: this.outObj,
+            incObj: this.incObj,
+            outObjSent: this.outObjSent,
+            responses: this.responses,
+            requests: this.requests,
+            requestsOrdered: this.requestsOrdered,
+            events: this.events,
+            eventsOrdered: this.eventsOrdered,
+        });
     }
 
     private receiveFnCalls(requests: Record<string, RpcReqObj>): Array<FnCall> {
