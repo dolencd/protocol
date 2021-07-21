@@ -36,20 +36,20 @@ const test2 = {
     c: {
         c: {
             bool: true,
-            buf: Buffer.from("1234")
-        }
+            buf: Buffer.from("1234"),
+        },
     },
     m: new Map([
-        [1, {a: "123"}],
-        [2, {b: Buffer.from("12")}],
-        [3, {a: "neki", b: Buffer.from("1234")}],
+        [1, { a: "123" }],
+        [2, { b: Buffer.from("12") }],
+        [3, { a: "neki", b: Buffer.from("1234") }],
     ]),
     mm: new Map([
         [1, Buffer.from("1")],
         [2, Buffer.allocUnsafe(0)],
-        [3, Buffer.from("123141413453453452345345")]
-    ])
-}
+        [3, Buffer.from("123141413453453452345345")],
+    ]),
+};
 
 const test3 = {
     a: test1,
@@ -57,24 +57,24 @@ const test3 = {
     m1: new Map([
         [1, test1],
         [2, test1],
-        [3, test1]
+        [3, test1],
     ]),
     m2: new Map([
         [1, test2],
         [2, test2],
-        [3, test2]
-    ])
-}
+        [3, test2],
+    ]),
+};
 
 describe("Test serializer", () => {
     test("Simple object", () => {
-        expect(parse(stringify(test1))).toEqual(test1)
-    })
+        expect(parse(stringify(test1))).toEqual(test1);
+    });
 
     test("Maps and Buffers", () => {
-        expect(parse(stringify(test2))).toEqual(test2)
-    })
+        expect(parse(stringify(test2))).toEqual(test2);
+    });
     test("Complex combined object", () => {
-        expect(parse(stringify(test3))).toEqual(test3)
-    })
+        expect(parse(stringify(test3))).toEqual(test3);
+    });
 });
