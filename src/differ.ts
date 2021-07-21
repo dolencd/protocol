@@ -38,11 +38,11 @@ export function getSync(oldObj: Record<string, any> = {}, newObj: Record<string,
 
 export function getDelete(oldObj: Record<string, any>, newObj: Record<string, any>): Record<string, any> {
     return transform(oldObj, (acc, value, key) => {
-        if (!newObj.hasOwnProperty(key)) {
+        if (!Object.prototype.hasOwnProperty.call(newObj, key)) {
             acc[key] = true;
         } else if (isPlainObject(value)) {
-            const del = getDelete(value, newObj[key])
-            if (Object.keys(del).length > 0) acc[key] = del
+            const del = getDelete(value, newObj[key]);
+            if (Object.keys(del).length > 0) acc[key] = del;
         }
     });
 }

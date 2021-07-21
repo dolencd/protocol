@@ -114,16 +114,16 @@ describe("Test differ", () => {
         const obj = {
             int: 1234,
             naprej: {
-              naprej: {
-                float: 3.14,
-              },
-              boolean: false,
+                naprej: {
+                    float: 3.14,
+                },
+                boolean: false,
             },
             bytes: Buffer.from("12345"),
             str: "test",
-        }
-        expect(getDelete(obj, obj)).toEqual({})
-    })
+        };
+        expect(getDelete(obj, obj)).toEqual({});
+    });
 
     test("Start sync with empty object", () => {
         expect(getSync({}, end)).toEqual(end);
