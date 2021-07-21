@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
 import LibBot, { LibBotOptions, ReceivedMessages } from "./libBot";
-import LibTop, { LibTopOptions } from "./libTop";
+import LibTop, { FnCall, LibTopOptions, ReceiveMessageObject } from "./libTop";
 import { PbTranscoderOptions } from "./PbTranscoder";
 
 export interface ProtocolOptions extends LibBotOptions, LibTopOptions, PbTranscoderOptions {
@@ -35,6 +35,8 @@ export class Protocol extends EventEmitter {
 
     private options: ProtocolOptions;
 
+    private fnCalls: Map<number, { resolve: Function; reject: Function }>;
+
     /**
      * Initialise the Protocol class. It is not recommended to use this directly.
      * @param options {ProtocolOptions}
@@ -45,16 +47,11 @@ export class Protocol extends EventEmitter {
         this.options = options;
         this.tp = new LibTop(options);
 
-        // tp event bindings
-        ["call", "event", "objSync", "objDelete", "objChange"].map((eventName) => {
-            this.tp.on(eventName, this.emit.bind(this, eventName));
-        });
-
         if (options.enableOrdering) {
             this.bt = new LibBot();
-        } else {
-            this.tp.on("send", this.emit.bind(this, "send"));
         }
+
+        this.fnCalls = new Map();
     }
 
     /**
@@ -108,7 +105,9 @@ export class Protocol extends EventEmitter {
      */
     send(): Buffer {
         if (!this.options.enableOrdering) {
-            return this.tp.send();
+            const msg = this.tp.send();
+            this.emit("send", msg);
+            return msg;
         }
         const msg = this.bt.send(this.tp.send());
         this.emit("send", msg);
@@ -121,13 +120,13 @@ export class Protocol extends EventEmitter {
      * @param  {Buffer} event Event to send in the shape of a Buffer
      * @returns  {void}
      */
-    receiveMessage(event: Buffer): Array<Buffer> {
+    receiveMessage(event: Buffer): [ReceiveMessageObject, Array<Buffer>] {
         if (!this.options.enableOrdering) {
             // LibBot is disabled. There are no acks or retransmitted messages.
-            if (event.length === 0) return [];
-            this.tp.receiveMessage.call(this.tp, event);
-            this.tp.receiveMessageOrdered.call(this.tp, event);
-            return [];
+            if (event.length === 0) return [{}, []];
+            const processedMsg = this.tp.receiveMessage.call(this.tp, event);
+            this.processLibTopReceiveMessage(processedMsg);
+            return [processedMsg, []];
         }
 
         const [messages, processedMessage]: [Array<Buffer>, ReceivedMessages] = this.bt.receiveMessage.call(
@@ -135,22 +134,69 @@ export class Protocol extends EventEmitter {
             event
         );
 
-        if (processedMessage.newMessage) {
-            this.tp.receiveMessage.call(this.tp, processedMessage.newMessage);
-        }
+        const processedMsg = this.tp.receiveMessage.call(this.tp, processedMessage);
+        this.processLibTopReceiveMessage(processedMsg);
 
-        if (processedMessage.ordered) {
-            processedMessage.ordered.map((msg) => {
-                this.tp.receiveMessageOrdered(msg);
-            });
-        }
-
-        if (messages)
+        if (messages) {
             messages.map((msg) => {
                 this.emit("send", msg);
             });
+        }
 
-        return messages;
+        return [processedMsg, messages];
+    }
+
+    private processLibTopReceiveMessage({
+        objAll,
+        objSync,
+        objDelete,
+        rpcCalls,
+        rpcResults,
+        events,
+        eventsOrdered,
+    }: ReceiveMessageObject) {
+        if (objAll) this.emit("objChange", objAll);
+        if (objSync) this.emit("objSync", objSync, objAll);
+        if (objDelete) this.emit("objDelete", objDelete, objAll);
+
+        if (events)
+            events.map((event: Buffer) => {
+                this.emit("event", event);
+            });
+
+        if (eventsOrdered)
+            eventsOrdered.map((event: Buffer) => {
+                this.emit("event", event);
+            });
+
+        if (rpcCalls)
+            rpcCalls.map((val: FnCall) => {
+                this.emit(
+                    "call",
+                    val.method,
+                    val.args,
+                    ((reqId: number, isError: boolean | null, resultBuf = Buffer.allocUnsafe(0)) => {
+                        this.tp.sendFnCallResponse(reqId, resultBuf, !!isError);
+                    }).bind(this, val.id)
+                );
+            });
+
+        if (rpcResults)
+            rpcResults.map(({ id, result }: FnCall) => {
+                const resultPromise = this.fnCalls.get(id);
+                if (!resultPromise) {
+                    console.error("Received response for function that wasn't called. Ignoring it");
+                    return;
+                }
+
+                if (result.isError) {
+                    resultPromise.reject(result.returns);
+                } else {
+                    resultPromise.resolve(result.returns);
+                }
+
+                this.fnCalls.delete(id);
+            });
     }
 
     /**
@@ -182,7 +228,7 @@ export class Protocol extends EventEmitter {
      * @returns  {Promise<Buffer>} Return values of the function call
      */
     callFn(method: string, args?: Buffer): Promise<Buffer> {
-        return this.tp.callFn.call(this.tp, method, args);
+        return this.callFnInternal(this.tp.callFn, method, args);
     }
 
     /**
@@ -194,6 +240,18 @@ export class Protocol extends EventEmitter {
      * @returns  {Promise<Buffer>} Return values of the function call
      */
     callFnOrdered(method: string, args?: Buffer): Promise<Buffer> {
-        return this.tp.callFnOrdered.call(this.tp, method, args);
+        return this.callFnInternal(this.tp.callFnOrdered, method, args);
+    }
+
+    private callFnInternal(fn: Function, method: string, args?: Buffer): Promise<Buffer> {
+        const id = fn.call(this.tp, method, args);
+
+        if (this.fnCalls.has(id)) {
+            throw new Error("Function call with this id already exists");
+        }
+
+        return new Promise((resolve, reject) => {
+            this.fnCalls.set(id, { resolve, reject });
+        });
     }
 }

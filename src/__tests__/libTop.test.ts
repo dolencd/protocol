@@ -1,5 +1,5 @@
 import { PbTranscoder } from "../PbTranscoder";
-import LibTop, { ReceiveMessageObject } from "../libTop";
+import LibTop from "../libTop";
 
 const tc = new PbTranscoder({
     protoPath: "./src/__tests__/test.proto",
@@ -10,12 +10,9 @@ describe("Receive message", () => {
 
     beforeEach(() => {
         tp = new LibTop({ transcoder: tc });
-    })
-
-    
+    });
 
     test("Receive message", () => {
-
         const obj = {
             reqRpc: {
                 1: {
@@ -44,53 +41,53 @@ describe("Receive message", () => {
             events: [Buffer.from("123"), Buffer.from("456")],
             eventsOrdered: [Buffer.from("1234"), Buffer.from("5678")],
         };
-    
+
         const expectedResult = {
             events: [Buffer.from("123"), Buffer.from("456")],
             eventsOrdered: [Buffer.from("1234"), Buffer.from("5678")],
             rpcCalls: [
-              {
-                id: 1,
-                method: "sum",
-                args: Buffer.from("1234"),
-              },
-              {
-                id: 2,
-                method: "add",
-              },
-              {
-                id: 3,
-                method: "send",
-                args: Buffer.from("12345"),
-              },
+                {
+                    id: 1,
+                    method: "sum",
+                    args: Buffer.from("1234"),
+                },
+                {
+                    id: 2,
+                    method: "add",
+                },
+                {
+                    id: 3,
+                    method: "send",
+                    args: Buffer.from("12345"),
+                },
             ],
             rpcResults: [
                 {
-                  id: 1,
-                  method: "sum",
-                  args: Buffer.from("1234"),
-                  result: {
-                    returns: Buffer.from("12345"),
-                  },
+                    id: 1,
+                    method: "sum",
+                    args: Buffer.from("1234"),
+                    result: {
+                        returns: Buffer.from("12345"),
+                    },
                 },
                 {
-                  id: 2,
-                  method: "add",
-                  result: {
-                    returns: Buffer.from("123"),
-                    isError: true,
-                  },
+                    id: 2,
+                    method: "add",
+                    result: {
+                        returns: Buffer.from("123"),
+                        isError: true,
+                    },
                 },
-              ],
-          }
+            ],
+        };
         const messageBuf = tc.encode(obj);
 
-        const tp = new LibTop({ transcoder: tc });
+        tp = new LibTop({ transcoder: tc });
 
         expect(tp.callFn("sum", Buffer.from("1234"))).toEqual(1);
         expect(tp.callFnOrdered("add")).toEqual(2);
 
-        tp.send()
+        tp.send();
 
         const ans = tp.receiveMessage(messageBuf);
 
@@ -98,7 +95,6 @@ describe("Receive message", () => {
     });
 
     test("Receive empty message", () => {
-
         expect(tp.receiveMessage(Buffer.allocUnsafe(0))).toEqual({});
         expect(tp.responses.size).toEqual(0);
         expect(tp.requests.size).toEqual(0);
@@ -112,7 +108,7 @@ describe("Sending message", () => {
 
     beforeEach(() => {
         tp = new LibTop({ transcoder: tc });
-    })
+    });
     test("Send regular RPC call", () => {
         tp.callFn("sum", Buffer.from("1234"));
         tp.callFn("add");
@@ -130,7 +126,7 @@ describe("Sending message", () => {
     });
 
     test("Send ordered RPC call", () => {
-        const tp = new LibTop({ transcoder: tc });
+        tp = new LibTop({ transcoder: tc });
         tp.callFnOrdered("sum", Buffer.from("1234"));
         tp.callFnOrdered("add");
         expect(tc.decode(tp.send())).toEqual({
@@ -147,7 +143,7 @@ describe("Sending message", () => {
     });
 
     test("Send regular event", () => {
-        const tp = new LibTop({ transcoder: tc });
+        tp = new LibTop({ transcoder: tc });
         tp.sendEvent(Buffer.from("12"));
         tp.sendEvent(Buffer.from("34"));
 
@@ -156,7 +152,7 @@ describe("Sending message", () => {
         });
     });
     test("Send ordered event", () => {
-        const tp = new LibTop({ transcoder: tc });
+        tp = new LibTop({ transcoder: tc });
         tp.sendEventOrdered(Buffer.from("12"));
         tp.sendEventOrdered(Buffer.from("34"));
 
@@ -172,96 +168,90 @@ describe("LibTop roundtrip", () => {
     beforeEach(() => {
         tp1 = new LibTop({ transcoder: tc });
         tp2 = new LibTop({ transcoder: tc });
-    })
+    });
 
     test("Events", () => {
         tp1.sendEvent(Buffer.from("1"));
         tp1.sendEventOrdered(Buffer.from("3"));
         tp1.sendEvent(Buffer.from("2"));
 
-        
-
         expect(tp2.receiveMessage(tp1.send())).toEqual({
-            events: [
-                Buffer.from("1"), 
-                Buffer.from("2"), 
-            ],
-            eventsOrdered: [
-                Buffer.from("3")
-            ]
+            events: [Buffer.from("1"), Buffer.from("2")],
+            eventsOrdered: [Buffer.from("3")],
         });
     });
 
     test("RPC execution", () => {
-        expect(tp1.callFn("add", Buffer.from("12345"))).toEqual(1)
-        expect(tp1.callFn("sum")).toEqual(2)
-        expect(tp1.callFnOrdered("sum", Buffer.from("12345"))).toEqual(3)
-        expect(tp1.callFnOrdered("add")).toEqual(4)
+        expect(tp1.callFn("add", Buffer.from("12345"))).toEqual(1);
+        expect(tp1.callFn("sum")).toEqual(2);
+        expect(tp1.callFnOrdered("sum", Buffer.from("12345"))).toEqual(3);
+        expect(tp1.callFnOrdered("add")).toEqual(4);
 
-        const incMsg = tp2.receiveMessage(tp1.send())
+        const incMsg = tp2.receiveMessage(tp1.send());
         expect(incMsg).toEqual({
             rpcCalls: [
-              {
-                id: 1,
-                method: "add",
-                args: Buffer.from("12345"),
-              },
-              {
-                id: 2,
-                method: "sum",
-              },
-              {
-                id: 3,
-                method: "sum",
-                args: Buffer.from("12345"),
-              },
-              {
-                id: 4,
-                method: "add",
-              },
+                {
+                    id: 1,
+                    method: "add",
+                    args: Buffer.from("12345"),
+                },
+                {
+                    id: 2,
+                    method: "sum",
+                },
+                {
+                    id: 3,
+                    method: "sum",
+                    args: Buffer.from("12345"),
+                },
+                {
+                    id: 4,
+                    method: "add",
+                },
             ],
-          })
-        incMsg.rpcCalls.map(({id, method, args}) => {
-            if (method === "add") tp2.sendFnCallResponse(id, Buffer.concat([Buffer.from([0, 0]), args || Buffer.allocUnsafe(0)]));
-            if (method === "sum") tp2.sendFnCallResponse(id, Buffer.concat([Buffer.from([0, 0]), args || Buffer.allocUnsafe(0)]));
-        })
-        const tmp = tp1.receiveMessage(tp2.send())
+        });
+        incMsg.rpcCalls.map(({ id, method, args }) => {
+            if (method === "add")
+                tp2.sendFnCallResponse(id, Buffer.concat([Buffer.from([0, 0]), args || Buffer.allocUnsafe(0)]));
+            if (method === "sum")
+                tp2.sendFnCallResponse(id, Buffer.concat([Buffer.from([0, 0]), args || Buffer.allocUnsafe(0)]));
+        });
+        const tmp = tp1.receiveMessage(tp2.send());
         expect(tmp).toEqual({
             rpcResults: [
-              {
-                method: "add",
-                args: Buffer.from("12345"),
-                id: 1,
-                result: {
-                  returns: Buffer.concat([Buffer.alloc(2), Buffer.from("12345")]),
+                {
+                    method: "add",
+                    args: Buffer.from("12345"),
+                    id: 1,
+                    result: {
+                        returns: Buffer.concat([Buffer.alloc(2), Buffer.from("12345")]),
+                    },
                 },
-              },
-              {
-                method: "sum",
-                id: 2,
-                result: {
-                  returns: Buffer.alloc(2),
+                {
+                    method: "sum",
+                    id: 2,
+                    result: {
+                        returns: Buffer.alloc(2),
+                    },
                 },
-              },
-              {
-                method: "sum",
-                args: Buffer.from("12345"),
-                id: 3,
-                result: {
-                  returns: Buffer.concat([Buffer.alloc(2), Buffer.from("12345")]),
+                {
+                    method: "sum",
+                    args: Buffer.from("12345"),
+                    id: 3,
+                    result: {
+                        returns: Buffer.concat([Buffer.alloc(2), Buffer.from("12345")]),
+                    },
                 },
-              },
-              {
-                method: "add",
-                id: 4,
-                result: {
-                  returns: Buffer.alloc(2),
+                {
+                    method: "add",
+                    id: 4,
+                    result: {
+                        returns: Buffer.alloc(2),
+                    },
                 },
-              },
             ],
-          })
+        });
     });
-
 
     test("Object Syncing", () => {
         tp1.outObj.int = 1234;
@@ -287,16 +277,16 @@ describe("LibTop roundtrip", () => {
             str: "test",
             bytes: Buffer.from("12345"),
             naprej: {
-              boolean: false,
-              naprej: {
-                float: 3.14,
-              },
+                boolean: false,
+                naprej: {
+                    float: 3.14,
+                },
             },
-          }
+        };
 
-        tp1.outObj = testObj
+        tp1.outObj = testObj;
         const msg = tp2.receiveMessage(tp1.send());
-        
+
         expect(msg.objAll.int).toEqual(1234);
         expect(msg.objAll.naprej.naprej.float).toBeCloseTo(3.14, 3);
         expect(msg.objAll.bytes).toEqual(Buffer.from("12345"));
@@ -315,7 +305,6 @@ describe("LibTop roundtrip", () => {
         expect(tp2.incObj.naprej.boolean).toEqual(false);
         expect(tp2.incObj.str).toEqual("test");
     });
-        
 
     test("Object Syncing with preset", () => {
         tp1 = new LibTop({
@@ -344,7 +333,7 @@ describe("LibTop roundtrip", () => {
         tp1.outObj.bytes = Buffer.from("12345");
         delete tp1.outObj.str;
 
-        const msg = tp2.receiveMessage(tp1.send());
+        tp2.receiveMessage(tp1.send());
 
         expect(tp2.incObj.int).toEqual(1234);
         expect(tp2.incObj.naprej.naprej.float).toBeCloseTo(3.14, 3);

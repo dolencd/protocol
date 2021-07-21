@@ -1,4 +1,4 @@
-import { isEmpty, cloneDeep, isError } from "lodash";
+import { isEmpty, cloneDeep } from "lodash";
 import { ReceivedMessages } from "./libBot";
 import * as differ from "./differ";
 import IdCreator from "./idCreator";
@@ -123,7 +123,7 @@ export default class LibTop {
     }
 
     private receiveFnCalls(requests: Record<string, RpcReqObj>): Array<FnCall> {
-        const returnArr: Array<FnCall> = []
+        const returnArr: Array<FnCall> = [];
 
         Object.entries(requests).map(([idStr, rpcObj]) => {
             const id = Number.parseInt(idStr, 10);
@@ -131,18 +131,18 @@ export default class LibTop {
                 console.error(`top rpc call without method name id:${id}`, rpcObj);
             }
 
-            if (this.responses.has(id)){
-                console.error(`Request with this Id already exists. Ignoring it`) // TODO is this OK?
+            if (this.responses.has(id)) {
+                console.error(`Request with this Id already exists. Ignoring it`); // TODO is this OK?
             }
 
             const obj: FnCall = {
                 id,
                 method: rpcObj.method,
-            } 
-            if(rpcObj.args) obj.args = rpcObj.args
+            };
+            if (rpcObj.args) obj.args = rpcObj.args;
 
-            this.responses.set(id, obj)
-            returnArr.push(cloneDeep(obj))
+            this.responses.set(id, obj);
+            returnArr.push(cloneDeep(obj));
         });
 
         return returnArr;
@@ -150,20 +150,20 @@ export default class LibTop {
 
     sendFnCallResponse(id: number, returns: Buffer | null, isError = false): void {
         const callObj = this.responses.get(id);
-        if(!callObj) {
-            throw new Error("Attempted to send response to a method call that doesn't exist")
+        if (!callObj) {
+            throw new Error("Attempted to send response to a method call that doesn't exist");
         }
 
         callObj.result = {
-            isError
-        }
+            isError,
+        };
         if (returns && returns.length > 0) {
-            callObj.result.returns = returns
+            callObj.result.returns = returns;
         }
     }
 
     private receiveFnResults(results: Record<string, RpcResObj>): Array<FnCall> {
-        const returnArr: Array<FnCall> = []
+        const returnArr: Array<FnCall> = [];
 
         Object.entries(results).map(([idStr, returnsObj]) => {
             const id = Number.parseInt(idStr, 10);
@@ -203,14 +203,13 @@ export default class LibTop {
     }
 
     receiveMessage(msg: ReceivedMessages | Buffer): ReceiveMessageObject {
-
         if (Buffer.isBuffer(msg)) {
             msg = {
                 newMessage: msg,
-            }
+            };
         }
 
-        if (!msg.ordered){
+        if (!msg.ordered) {
             msg.ordered = [msg.newMessage];
         }
 
@@ -220,34 +219,33 @@ export default class LibTop {
             rpcCalls: [],
         };
 
-        if(msg.newMessage) {
+        if (msg.newMessage) {
             const obj: ProtocolObject = this.transcoder.decode(msg.newMessage);
 
             // console.log("top decoded", obj)
             if (obj.events)
                 obj.events.map((b: Buffer) => {
-                    outputObj.events.push(b)
+                    outputObj.events.push(b);
                 });
 
             if (obj.reqRpc) {
                 this.receiveFnCalls(obj.reqRpc).map((f: FnCall) => {
                     outputObj.rpcCalls.push(f);
-                })
+                });
             }
 
             // receive rpc - responses that were received
             if (obj.resRpc) {
-                outputObj.rpcResults = this.receiveFnResults(obj.resRpc)
+                outputObj.rpcResults = this.receiveFnResults(obj.resRpc);
             }
         }
-
 
         msg.ordered.map((buf) => {
             // console.log("top accept", binMsg.length)
             const obj: ProtocolObject = this.transcoder.decode(buf);
 
             // console.log("top decoded", obj)
-            if (obj.eventsOrdered){
+            if (obj.eventsOrdered) {
                 obj.eventsOrdered.map((b: Buffer) => {
                     outputObj.eventsOrdered.push(b);
                 });
@@ -258,7 +256,7 @@ export default class LibTop {
             if (obj.reqRpcOrdered) {
                 this.receiveFnCalls(obj.reqRpcOrdered).map((f: FnCall) => {
                     outputObj.rpcCalls.push(f);
-                })
+                });
             }
 
             if (obj.objAll) {
@@ -270,12 +268,12 @@ export default class LibTop {
             } else {
                 if (obj.objSync) {
                     this.receiveObjSync(obj.objSync);
-                    outputObj.objSync = obj.objSync
+                    outputObj.objSync = obj.objSync;
                 }
 
                 if (obj.objDelete) {
                     this.receiveObjDelete(obj.objDelete);
-                    outputObj.objDelete = obj.objDelete
+                    outputObj.objDelete = obj.objDelete;
                 }
             }
 
@@ -284,10 +282,10 @@ export default class LibTop {
             }
         });
 
-        return removeUndefinedAndEmpty(outputObj)
+        return removeUndefinedAndEmpty(outputObj);
     }
 
-    private _callFn(requestsMap: Map<number, FnCall>, method: string, args?: Buffer) {
+    private callFnInternal(requestsMap: Map<number, FnCall>, method: string, args?: Buffer) {
         const id = this.idCreator.next();
 
         requestsMap.set(id, {
@@ -296,16 +294,16 @@ export default class LibTop {
             id,
             sent: false,
         });
-    
+
         return id;
     }
 
     callFn(method: string, args?: Buffer): number {
-        return this._callFn(this.requests, method, args);
+        return this.callFnInternal(this.requests, method, args);
     }
 
     callFnOrdered(method: string, args?: Buffer): number {
-        return this._callFn(this.requestsOrdered, method, args);
+        return this.callFnInternal(this.requestsOrdered, method, args);
     }
 
     /**
@@ -356,13 +354,13 @@ export default class LibTop {
 
         const resRpc: Record<number, RpcResObj> = {};
         this.responses.forEach((val: FnCall, key: number) => {
-            if(!val.result) return;
+            if (!val.result) return;
             resRpc[key] = {
                 returns: val.result.returns,
-                isError: val.result.isError ? val.result.isError : undefined 
+                isError: val.result.isError ? val.result.isError : undefined,
             };
             this.responses.delete(key);
-        })
+        });
 
         const { events, eventsOrdered } = this;
         this.events = [];
