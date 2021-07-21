@@ -1,22 +1,22 @@
 export default class IdCreator {
-    min: number;
+    readonly min: number;
 
-    max: number;
+    readonly max: number;
 
-    curId: number;
+    cur: number;
 
-    constructor(min = 1, max = 65535) {
+    constructor(cur = 1, min = 1, max = 65535) {
         this.min = min;
         this.max = max;
-        this.curId = min;
+        this.cur = cur;
     }
 
     next() {
-        const id = this.curId;
+        const id = this.cur;
         if (id >= this.max) {
-            this.curId = this.min;
+            this.cur = this.min;
         } else {
-            this.curId++;
+            this.cur++;
         }
         return id;
     }

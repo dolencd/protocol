@@ -1,7 +1,8 @@
-import { EventEmitter } from "events";
 import { isEmpty, cloneDeep } from "lodash";
+import { ReceivedMessages } from "./libBot";
 import * as differ from "./differ";
 import IdCreator from "./idCreator";
+import { stringify as serializerStringify, parse as serializerParse } from "./serializer";
 
 interface RpcReqObj {
     method: string;
@@ -9,7 +10,14 @@ interface RpcReqObj {
 }
 
 interface RpcResObj {
+    /**
+     * Buffer that was sent as a response to the given RPC call.
+     */
     returns?: Buffer;
+
+    /**
+     * If set to true, the response is treated as an error, otherwise there is no error.
+     */
     isError?: boolean;
 }
 
@@ -27,6 +35,17 @@ interface ProtocolObject {
     reason?: string;
 }
 
+export interface ReceiveMessageObject {
+    objAll?: Record<string, any>;
+    objSync?: Record<string, any>;
+    objDelete?: Record<string, any>;
+    rpcCalls?: Array<FnCall>;
+    rpcResults?: Array<FnCall>;
+    events?: Array<Buffer>;
+    eventsOrdered?: Array<Buffer>;
+    codes?: Array<number>;
+}
+
 interface Transcoder {
     encode: (obj: Record<string, any>) => Buffer;
     decode: (buf: Buffer) => Record<string, any>;
@@ -39,28 +58,56 @@ export interface LibTopOptions {
     transcoder?: Transcoder;
 
     /**
-     * The object that is already synced from the remote host (incoming sync). Setting this will avoid unnecessary syncing.
+     * The object that is already synced from the remote host (incoming sync). Setting this will avoid unnecessary syncing. Ignored if restoreState is used.
      */
     initialIncObj?: Record<string, any>;
 
     /**
-     * The object that is already synced to the remote host (outgoing sync). Setting this will avoid unnecessary syncing.
+     * The object that is already synced to the remote host (outgoing sync). Setting this will avoid unnecessary syncing. Ignored if restoreState is used.
      */
     initialOutObj?: Record<string, any>;
+
+    /**
+     * Restore state of old LibTop instance
+     */
+    restoreState?: string;
 }
 
-interface FnCall {
+export interface FnCall {
+    /**
+     * Id number of the request
+     */
     id: number;
+
+    /**
+     * Optional arguments encoded as a Buffer.
+     */
     args?: Buffer;
+
+    /**
+     * The name of the method that was called.
+     */
     method: string;
-    resolve: Function;
-    reject: Function;
-    sent: boolean;
+
+    /**
+     * Whether the function call was sent or not. Unused for calls that have been received from the other side.
+     */
+    sent?: boolean;
+
+    /**
+     * Result object. Exists if the response has arrived.
+     */
+    result?: RpcResObj;
 }
 
+/**
+ * Recursively removes all empty objects and arrays.
+ * @param o Object to clean
+ * @returns Cleaned object
+ */
 function removeUndefinedAndEmpty(o: Record<string, any>) {
     Object.keys(o).map((k) => {
-        if (o[k] === undefined || o[k] === null) {
+        if (o[k] === undefined || o[k] === null || (Array.isArray(o[k]) && o[k].length === 0)) {
             delete o[k];
         }
 
@@ -75,72 +122,128 @@ function removeUndefinedAndEmpty(o: Record<string, any>) {
     return o;
 }
 
-export default class LibTop extends EventEmitter {
-    incObj: Record<string, any>;
+export default class LibTop {
+    public incObj: Record<string, any>;
 
-    outObj: Record<string, any>;
+    public outObj: Record<string, any>;
 
-    outObjSent: Record<string, any>;
+    protected outObjSent: Record<string, any>;
 
-    responses: Map<number, RpcResObj>;
+    readonly responses: Map<number, FnCall>;
 
-    requests: Map<number, FnCall>;
+    readonly requests: Map<number, FnCall>;
 
-    requestsOrdered: Map<number, FnCall>;
+    readonly requestsOrdered: Map<number, FnCall>;
 
-    events: Array<Buffer>;
+    protected events: Array<Buffer>;
 
-    eventsOrdered: Array<Buffer>;
+    protected eventsOrdered: Array<Buffer>;
 
-    idCreator: IdCreator;
+    readonly idCreator: IdCreator;
 
-    transcoder: Transcoder;
+    private transcoder: Transcoder;
 
     constructor(options: LibTopOptions) {
-        super();
-        this.idCreator = new IdCreator(1, 65530);
-
         this.transcoder = options.transcoder;
 
-        this.outObj = options.initialOutObj ? cloneDeep(options.initialOutObj) : {};
-        this.incObj = options.initialIncObj ? cloneDeep(options.initialIncObj) : {};
-        this.outObjSent = options.initialOutObj ? cloneDeep(options.initialOutObj) : {};
+        if (options.restoreState) {
+            const rs = serializerParse(options.restoreState);
+            this.idCreator = new IdCreator(rs.idCur, rs.idMin, rs.idMax);
 
-        this.responses = new Map();
-        this.requests = new Map();
-        this.requestsOrdered = new Map();
-        this.events = [];
-        this.eventsOrdered = [];
+            this.outObj = rs.outObj;
+            this.incObj = rs.incObj;
+            this.outObjSent = rs.outObjSent;
+
+            this.responses = rs.responses;
+            this.requests = rs.requests;
+            this.requestsOrdered = rs.requestsOrdered;
+            this.events = rs.events;
+            this.eventsOrdered = rs.eventsOrdered;
+        } else {
+            this.idCreator = new IdCreator(1, 1, 65530);
+            this.outObj = options.initialOutObj ? cloneDeep(options.initialOutObj) : {};
+            this.incObj = options.initialIncObj ? cloneDeep(options.initialIncObj) : {};
+            this.outObjSent = cloneDeep(this.outObj);
+
+            this.responses = new Map();
+            this.requests = new Map();
+            this.requestsOrdered = new Map();
+            this.events = [];
+            this.eventsOrdered = [];
+        }
     }
 
-    private receiveFnCalls(requests: Record<string, RpcReqObj>) {
-        Object.keys(requests).map((idStr: string) => {
-            const id = Number.parseInt(idStr, 10);
-
-            const rpcObj: RpcReqObj = requests[id];
-            if (!rpcObj.method) {
-                console.error(`top rpc call without method name id:${id}`, rpcObj);
-            }
-            // console.log(`top got fn call id:${id} method:${util.inspect(rpcObj)}`)
-            this.emit(
-                "call",
-                rpcObj.method,
-                rpcObj.args,
-                ((reqId: number, isError: boolean | null, resultBuf: Buffer) => {
-                    const respObj: RpcResObj = { returns: resultBuf };
-                    if (isError) respObj.isError = true;
-                    this.responses.set(reqId, respObj);
-                    // console.log(`top fn call processed id:${id} method:${rpcObj.method}`)
-                }).bind(this, id)
-            );
+    /**
+     * Get the serialized version of this object. Used to store the state and to later restore it using LibTopOptions.restoreState.
+     */
+    getLibState(): string {
+        return serializerStringify({
+            idMin: this.idCreator.min,
+            idMax: this.idCreator.max,
+            idCur: this.idCreator.cur,
+            outObj: this.outObj,
+            incObj: this.incObj,
+            outObjSent: this.outObjSent,
+            responses: this.responses,
+            requests: this.requests,
+            requestsOrdered: this.requestsOrdered,
+            events: this.events,
+            eventsOrdered: this.eventsOrdered,
         });
     }
 
-    private receiveFnResults(results: Record<string, RpcResObj>) {
-        Object.keys(results).map((idStr: string) => {
+    private receiveFnCalls(requests: Record<string, RpcReqObj>): Array<FnCall> {
+        const returnArr: Array<FnCall> = [];
+
+        Object.entries(requests).map(([idStr, rpcObj]) => {
+            const id = Number.parseInt(idStr, 10);
+            if (!rpcObj.method) {
+                console.error(`top rpc call without method name id:${id}`, rpcObj);
+            }
+
+            if (this.responses.has(id)) {
+                console.error(`Request with this Id already exists. Ignoring it`); // TODO is this OK?
+            }
+
+            const obj: FnCall = {
+                id,
+                method: rpcObj.method,
+            };
+            if (rpcObj.args) obj.args = rpcObj.args;
+
+            this.responses.set(id, obj);
+            returnArr.push(cloneDeep(obj));
+        });
+
+        return returnArr;
+    }
+
+    /**
+     * Sends a response to the function call associated with the given id.
+     * @param id Id number of the request
+     * @param returns Optional response Buffer
+     * @param isError Set to true to signify an error, ignore otherwise.
+     */
+    sendFnCallResponse(id: number, returns: Buffer | null, isError = false): void {
+        const callObj = this.responses.get(id);
+        if (!callObj) {
+            throw new Error("Attempted to send response to a method call that doesn't exist");
+        }
+
+        callObj.result = {
+            isError,
+        };
+        if (returns && returns.length > 0) {
+            callObj.result.returns = returns;
+        }
+    }
+
+    private receiveFnResults(results: Record<string, RpcResObj>): Array<FnCall> {
+        const returnArr: Array<FnCall> = [];
+
+        Object.entries(results).map(([idStr, returnsObj]) => {
             const id = Number.parseInt(idStr, 10);
             const callObj = this.requests.get(id) || this.requestsOrdered.get(id);
-            const returnsObj = results[id];
 
             if (!returnsObj) {
                 console.error("missing values rrpc", results, id);
@@ -150,123 +253,150 @@ export default class LibTop extends EventEmitter {
             if (!callObj) {
                 console.error(
                     "Got response for function that wasn't called",
-                    callObj,
+                    id,
                     Array.from(this.requests.entries()),
                     Array.from(this.requestsOrdered.entries())
                 );
                 return;
             }
 
-            if (returnsObj.isError === true) {
-                callObj.reject(returnsObj.returns || Buffer.allocUnsafe(0));
-            } else {
-                callObj.resolve(returnsObj.returns || Buffer.allocUnsafe(0));
-            }
-
+            callObj.result = returnsObj;
+            delete callObj.sent;
+            returnArr.push(callObj);
             this.requests.delete(id);
             this.requestsOrdered.delete(id);
         });
+
+        return returnArr;
     }
 
     private receiveObjSync(obj: Record<string, any>): void {
         this.incObj = differ.applySync(this.incObj, obj);
-        this.emit("objSync", obj, this.incObj);
     }
 
     private receiveObjDelete(obj: Record<string, any>): void {
         this.incObj = differ.applyDelete(this.incObj, obj);
-        this.emit("objDelete", obj, this.incObj);
     }
 
-    receiveMessageOrdered(buf: Buffer): void {
-        // console.log("top accept", binMsg.length)
-        const obj: ProtocolObject = this.transcoder.decode(buf);
-
-        // console.log("top decoded", obj)
-        if (obj.eventsOrdered)
-            obj.eventsOrdered.map((b: Buffer) => {
-                this.emit("event", b);
-            });
-
-        // send rpc - what i want the other process to do
-        // receive fn to run
-        if (obj.reqRpcOrdered) {
-            this.receiveFnCalls(obj.reqRpcOrdered);
+    /**
+     * Accepts and processes messages coming from the other side.
+     * @param msg Received message, either as a pure Buffer (treated as a single message, both ordered and unordered) or as a ReceivedMessages produced by LibBot.
+     * @returns Object containing the processed message
+     */
+    receiveMessage(msg: ReceivedMessages | Buffer): ReceiveMessageObject {
+        if (Buffer.isBuffer(msg)) {
+            msg = {
+                newMessage: msg,
+            };
         }
 
-        if (obj.objAll) {
-            this.incObj = obj.objAll;
+        if (!msg.ordered) {
+            msg.ordered = [msg.newMessage];
+        }
 
-            if (obj.objSync || obj.objDelete) {
-                console.error("Got message with objAll AND objSync or objDelete. Ignoringthem");
+        const outputObj: ReceiveMessageObject = {
+            events: [],
+            eventsOrdered: [],
+            rpcCalls: [],
+        };
+
+        if (msg.newMessage) {
+            const obj: ProtocolObject = this.transcoder.decode(msg.newMessage);
+
+            // console.log("top decoded", obj)
+            if (obj.events)
+                obj.events.map((b: Buffer) => {
+                    outputObj.events.push(b);
+                });
+
+            if (obj.reqRpc) {
+                this.receiveFnCalls(obj.reqRpc).map((f: FnCall) => {
+                    outputObj.rpcCalls.push(f);
+                });
             }
-        } else {
-            if (obj.objSync) {
-                this.receiveObjSync(obj.objSync);
-            }
 
-            if (obj.objDelete) {
-                this.receiveObjDelete(obj.objDelete);
+            // receive rpc - responses that were received
+            if (obj.resRpc) {
+                outputObj.rpcResults = this.receiveFnResults(obj.resRpc);
             }
         }
 
-        if (obj.objAll || obj.objSync || obj.objDelete) {
-            this.emit("objChange", this.incObj);
-        }
-    }
+        msg.ordered.map((buf) => {
+            // console.log("top accept", binMsg.length)
+            const obj: ProtocolObject = this.transcoder.decode(buf);
 
-    receiveMessage(buf: Buffer): void {
-        // console.log("top accept", binMsg.length)
-        const obj: ProtocolObject = this.transcoder.decode(buf);
+            // console.log("top decoded", obj)
+            if (obj.eventsOrdered) {
+                obj.eventsOrdered.map((b: Buffer) => {
+                    outputObj.eventsOrdered.push(b);
+                });
+            }
 
-        // console.log("top decoded", obj)
-        if (obj.events)
-            obj.events.map((b: Buffer) => {
-                this.emit("event", b);
-            });
+            // send rpc - what i want the other process to do
+            // receive fn to run
+            if (obj.reqRpcOrdered) {
+                this.receiveFnCalls(obj.reqRpcOrdered).map((f: FnCall) => {
+                    outputObj.rpcCalls.push(f);
+                });
+            }
 
-        // send rpc - what i want the other process to do
-        // receive fn to run
-        if (obj.reqRpc) {
-            this.receiveFnCalls(obj.reqRpc);
-        }
+            if (obj.objAll) {
+                this.incObj = obj.objAll;
 
-        // receive rpc - responses that were received
-        if (obj.resRpc) {
-            this.receiveFnResults(obj.resRpc);
-        }
-    }
+                if (obj.objSync || obj.objDelete) {
+                    console.error("Got message with objAll AND objSync or objDelete. Ignoring them");
+                }
+            } else {
+                if (obj.objSync) {
+                    this.receiveObjSync(obj.objSync);
+                    outputObj.objSync = obj.objSync;
+                }
 
-    callFn(method: string, args?: Buffer): Promise<Buffer> {
-        const id = this.idCreator.next();
-        // console.log(`top fn called id:${id}`)
+                if (obj.objDelete) {
+                    this.receiveObjDelete(obj.objDelete);
+                    outputObj.objDelete = obj.objDelete;
+                }
+            }
 
-        return new Promise((resolve, reject) => {
-            this.requests.set(id, {
-                method,
-                args,
-                resolve,
-                reject,
-                id,
-                sent: false,
-            });
+            if (obj.objAll || obj.objSync || obj.objDelete) {
+                outputObj.objAll = cloneDeep(this.incObj);
+            }
         });
+
+        return removeUndefinedAndEmpty(outputObj);
     }
 
-    callFnOrdered(method: string, args?: Buffer): Promise<Buffer> {
+    private callFnInternal(requestsMap: Map<number, FnCall>, method: string, args?: Buffer) {
         const id = this.idCreator.next();
-        // console.log(`top fn called id:${id}`)
 
-        return new Promise((resolve, reject) => {
-            this.requestsOrdered.set(id, {
-                method,
-                args,
-                resolve,
-                reject,
-                id,
-                sent: false,
-            });
+        requestsMap.set(id, {
+            method,
+            args,
+            id,
+            sent: false,
         });
+
+        return id;
+    }
+
+    /**
+     * Calls a function that will be processed as soon as it is received.
+     * @param method Name of method to call
+     * @param args Optional arguments
+     * @returns Id number of this request
+     */
+    callFn(method: string, args?: Buffer): number {
+        return this.callFnInternal(this.requests, method, args);
+    }
+
+    /**
+     * Calls a function that will be processed in order with other messages.
+     * @param method Name of method to call
+     * @param args Optional arguments
+     * @returns Id number of this request
+     */
+    callFnOrdered(method: string, args?: Buffer): number {
+        return this.callFnInternal(this.requestsOrdered, method, args);
     }
 
     /**
@@ -293,11 +423,10 @@ export default class LibTop extends EventEmitter {
      * Emit message with all unsent data
      * @function send
      */
-    send(): Buffer {
+    send(autoConfirmChanges = true): [Buffer, Function | null] {
         const reqRpc: Record<number, RpcReqObj> = {};
         this.requests.forEach((val: FnCall, key: number) => {
             if (val.sent) return;
-            val.sent = true;
             reqRpc[key] = {
                 method: val.method,
                 args: val.args,
@@ -305,22 +434,25 @@ export default class LibTop extends EventEmitter {
             if (val.args) reqRpc[key].args = val.args;
         });
 
-        const reqRpcOrdered: any = {};
+        const reqRpcOrdered: Record<number, RpcReqObj> = {};
         this.requestsOrdered.forEach((val: FnCall, key: number) => {
             if (val.sent) return;
-            val.sent = true;
             reqRpcOrdered[key] = {
                 method: val.method,
             };
             if (val.args) reqRpcOrdered[key].args = val.args;
         });
 
-        const resRpc = Object.fromEntries(this.responses);
-        this.responses.clear();
+        const resRpc: Record<number, RpcResObj> = {};
+        this.responses.forEach((val: FnCall, key: number) => {
+            if (!val.result) return;
+            resRpc[key] = {
+                returns: val.result.returns,
+                isError: val.result.isError ? val.result.isError : undefined,
+            };
+        });
 
         const { events, eventsOrdered } = this;
-        this.events = [];
-        this.eventsOrdered = [];
 
         const finishedObject = {
             reqRpcOrdered,
@@ -331,10 +463,33 @@ export default class LibTop extends EventEmitter {
             events,
             eventsOrdered,
         };
-        this.outObjSent = cloneDeep(this.outObj);
+
         const cleanedObject = removeUndefinedAndEmpty(finishedObject);
         const buf = this.transcoder.encode(cleanedObject);
-        this.emit("send", buf);
-        return buf;
+
+        const confirmChanges = () => {
+            Object.keys(reqRpc).map((key: string) => {
+                this.requests.get(parseInt(key, 10)).sent = true;
+            });
+
+            Object.keys(reqRpcOrdered).map((key: string) => {
+                this.requestsOrdered.get(parseInt(key, 10)).sent = true;
+            });
+
+            Object.keys(resRpc).map((key: string) => {
+                this.responses.delete(parseInt(key, 10));
+            });
+
+            this.events = [];
+            this.eventsOrdered = [];
+            this.outObjSent = cloneDeep(this.outObj);
+        };
+
+        if (autoConfirmChanges) {
+            confirmChanges();
+            return [buf, null];
+        }
+
+        return [buf, confirmChanges.bind(this)];
     }
 }

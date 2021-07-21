@@ -105,8 +105,24 @@ describe("Test differ", () => {
     test("applyDelete", () => {
         expect(applyDelete(start, del)).toEqual(afterDel);
     });
+
     test("applySync", () => {
         expect(applySync(start, sync)).toEqual(afterSync);
+    });
+
+    test("Correctly get empty delete with same objects and boolean = false", () => {
+        const obj = {
+            int: 1234,
+            naprej: {
+                naprej: {
+                    float: 3.14,
+                },
+                boolean: false,
+            },
+            bytes: Buffer.from("12345"),
+            str: "test",
+        };
+        expect(getDelete(obj, obj)).toEqual({});
     });
 
     test("Start sync with empty object", () => {
