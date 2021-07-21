@@ -1,4 +1,5 @@
 import * as tc from "./transcoder";
+import { stringify as serializerStringify, parse as serializerParse } from "./serializer";
 
 const SEQ_MAX = process.env.NODE_ENV === "test" ? 100 : 2 ** 16 - 1;
 const SEQ_LOWER = Math.floor(SEQ_MAX * 0.1);
@@ -26,6 +27,11 @@ export interface LibBotOptions {
      * Default: off
      */
     autoAckOnFailedMessages?: number;
+
+    /**
+     * Restore state of old LibTop instance. If present, other options will be ignored.
+     */
+    restoreState?: string;
 }
 
 export interface ReceivedMessages {
@@ -102,21 +108,44 @@ export default class LibBot {
     private recSeqOffset: number;
 
     constructor(options: LibBotOptions = {}) {
-        this.options = options;
-        this.received = new Map();
-        this.sent = new Map();
-        this.sendFail = new Map();
+        if (options.restoreState) {
+            const rs = serializerParse(options.restoreState);
+            this.options = rs.options;
+            this.received = rs.received;
+            this.sent = rs.sent;
+            this.sendFail = rs.sendFail;
 
-        this.maxIncSeq = 0;
-        this.maxSendAckKnownReceived = 0;
+            this.maxIncSeq = rs.maxIncSeq;
+            this.maxSendAckKnownReceived = rs.maxSendAckKnownReceived;
 
-        this.maxSendSeq = 0;
-        this.maxSendAck = 0;
-        this.maxSendSeqKnownReceived = 0;
-        this.maxEmittedSeq = 0;
+            this.maxSendSeq = rs.maxSendSeq;
+            this.maxSendAck = rs.maxSendAck;
+            this.maxSendSeqKnownReceived = rs.maxSendAckKnownReceived;
+            this.maxEmittedSeq = rs.maxEmittedSeq;
 
-        this.inTransition = false;
-        this.recSeqOffset = 0;
+            this.inTransition = rs.inTransition;
+            this.recSeqOffset = rs.recSeqOffset;
+        } else {
+            this.options = options;
+            this.received = new Map();
+            this.sent = new Map();
+            this.sendFail = new Map();
+
+            this.maxIncSeq = 0;
+            this.maxSendAckKnownReceived = 0;
+
+            this.maxSendSeq = 0;
+            this.maxSendAck = 0;
+            this.maxSendSeqKnownReceived = 0;
+            this.maxEmittedSeq = 0;
+
+            this.inTransition = false;
+            this.recSeqOffset = 0;
+        }
+    }
+
+    getLibState(): string {
+        return serializerStringify(this);
     }
 
     /**
