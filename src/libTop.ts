@@ -10,7 +10,14 @@ interface RpcReqObj {
 }
 
 interface RpcResObj {
+    /**
+     * Buffer that was sent as a response to the given RPC call.
+     */
     returns?: Buffer;
+
+    /**
+     * If set to true, the response is treated as an error, otherwise there is no error.
+     */
     isError?: boolean;
 }
 
@@ -66,28 +73,38 @@ export interface LibTopOptions {
     restoreState?: string;
 }
 
-// export interface LibTopState {
-//     idMin: number;
-//     idMax: number;
-//     idCur: number;
-//     incObj: Record<string, any>;
-//     outObj: Record<string, any>;
-//     outObjSent: Record<string, any>;
-//     responses: Map<number, FnCall>;
-//     requests: Map<number, FnCall>;
-//     requestsOrdered: Map<number, FnCall>;
-//     events: Array<Buffer>;
-//     eventsOrdered: Array<Buffer>;
-// }
-
 export interface FnCall {
+    /**
+     * Id number of the request
+     */
     id: number;
+
+    /**
+     * Optional arguments encoded as a Buffer.
+     */
     args?: Buffer;
+
+    /**
+     * The name of the method that was called.
+     */
     method: string;
+
+    /**
+     * Whether the function call was sent or not. Unused for calls that have been received from the other side.
+     */
     sent?: boolean;
+
+    /**
+     * Result object. Exists if the response has arrived.
+     */
     result?: RpcResObj;
 }
 
+/**
+ * Recursively removes all empty objects and arrays.
+ * @param o Object to clean
+ * @returns Cleaned object
+ */
 function removeUndefinedAndEmpty(o: Record<string, any>) {
     Object.keys(o).map((k) => {
         if (o[k] === undefined || o[k] === null || (Array.isArray(o[k]) && o[k].length === 0)) {
@@ -106,25 +123,25 @@ function removeUndefinedAndEmpty(o: Record<string, any>) {
 }
 
 export default class LibTop {
-    incObj: Record<string, any>;
+    public incObj: Record<string, any>;
 
-    outObj: Record<string, any>;
+    public outObj: Record<string, any>;
 
-    outObjSent: Record<string, any>;
+    protected outObjSent: Record<string, any>;
 
-    responses: Map<number, FnCall>;
+    readonly responses: Map<number, FnCall>;
 
-    requests: Map<number, FnCall>;
+    readonly requests: Map<number, FnCall>;
 
-    requestsOrdered: Map<number, FnCall>;
+    readonly requestsOrdered: Map<number, FnCall>;
 
-    events: Array<Buffer>;
+    protected events: Array<Buffer>;
 
-    eventsOrdered: Array<Buffer>;
+    protected eventsOrdered: Array<Buffer>;
 
-    idCreator: IdCreator;
+    readonly idCreator: IdCreator;
 
-    transcoder: Transcoder;
+    private transcoder: Transcoder;
 
     constructor(options: LibTopOptions) {
         this.transcoder = options.transcoder;
@@ -156,6 +173,9 @@ export default class LibTop {
         }
     }
 
+    /**
+     * Get the serialized version of this object. Used to store the state and to later restore it using LibTopOptions.restoreState.
+     */
     getLibState(): string {
         return serializerStringify({
             idMin: this.idCreator.min,
@@ -198,6 +218,12 @@ export default class LibTop {
         return returnArr;
     }
 
+    /**
+     * Sends a response to the function call associated with the given id.
+     * @param id Id number of the request
+     * @param returns Optional response Buffer
+     * @param isError Set to true to signify an error, ignore otherwise.
+     */
     sendFnCallResponse(id: number, returns: Buffer | null, isError = false): void {
         const callObj = this.responses.get(id);
         if (!callObj) {
@@ -252,6 +278,11 @@ export default class LibTop {
         this.incObj = differ.applyDelete(this.incObj, obj);
     }
 
+    /**
+     * Accepts and processes messages coming from the other side.
+     * @param msg Received message, either as a pure Buffer (treated as a single message, both ordered and unordered) or as a ReceivedMessages produced by LibBot.
+     * @returns Object containing the processed message
+     */
     receiveMessage(msg: ReceivedMessages | Buffer): ReceiveMessageObject {
         if (Buffer.isBuffer(msg)) {
             msg = {
@@ -348,10 +379,22 @@ export default class LibTop {
         return id;
     }
 
+    /**
+     * Calls a function that will be processed as soon as it is received.
+     * @param method Name of method to call
+     * @param args Optional arguments
+     * @returns Id number of this request
+     */
     callFn(method: string, args?: Buffer): number {
         return this.callFnInternal(this.requests, method, args);
     }
 
+    /**
+     * Calls a function that will be processed in order with other messages.
+     * @param method Name of method to call
+     * @param args Optional arguments
+     * @returns Id number of this request
+     */
     callFnOrdered(method: string, args?: Buffer): number {
         return this.callFnInternal(this.requestsOrdered, method, args);
     }
