@@ -112,7 +112,7 @@ describe("Sending message", () => {
     test("Send regular RPC call", () => {
         tp.callFn("sum", Buffer.from("1234"));
         tp.callFn("add");
-        expect(tc.decode(tp.send())).toEqual({
+        expect(tc.decode(tp.send()[0])).toEqual({
             reqRpc: {
                 1: {
                     method: "sum",
@@ -126,10 +126,9 @@ describe("Sending message", () => {
     });
 
     test("Send ordered RPC call", () => {
-        tp = new LibTop({ transcoder: tc });
         tp.callFnOrdered("sum", Buffer.from("1234"));
         tp.callFnOrdered("add");
-        expect(tc.decode(tp.send())).toEqual({
+        expect(tc.decode(tp.send()[0])).toEqual({
             reqRpcOrdered: {
                 1: {
                     method: "sum",
@@ -143,22 +142,50 @@ describe("Sending message", () => {
     });
 
     test("Send regular event", () => {
-        tp = new LibTop({ transcoder: tc });
         tp.sendEvent(Buffer.from("12"));
         tp.sendEvent(Buffer.from("34"));
 
-        expect(tc.decode(tp.send())).toEqual({
+        expect(tc.decode(tp.send()[0])).toEqual({
             events: [Buffer.from("12"), Buffer.from("34")],
         });
     });
     test("Send ordered event", () => {
-        tp = new LibTop({ transcoder: tc });
         tp.sendEventOrdered(Buffer.from("12"));
         tp.sendEventOrdered(Buffer.from("34"));
 
-        expect(tc.decode(tp.send())).toEqual({
+        expect(tc.decode(tp.send()[0])).toEqual({
             eventsOrdered: [Buffer.from("12"), Buffer.from("34")],
         });
+    });
+
+    test("Without confirming multiple messages must be the same", () => {
+        tp.callFn("sum", Buffer.from("1234"));
+        tp.callFn("add");
+        tp.callFnOrdered("sum", Buffer.from("1234"));
+        tp.callFnOrdered("add");
+        tp.sendEvent(Buffer.from("12"));
+        tp.sendEvent(Buffer.from("34"));
+        tp.sendEventOrdered(Buffer.from("12"));
+        tp.sendEventOrdered(Buffer.from("34"));
+        tp.outObj.int = 1234;
+        tp.outObj.naprej = {};
+        tp.outObj.naprej.naprej = {};
+        tp.outObj.naprej.naprej.float = 3.14;
+        tp.outObj.bytes = Buffer.from("12345");
+        tp.outObj.naprej.boolean = false;
+        tp.outObj.str = "test";
+
+        const [send1] = tp.send(false);
+        const [send2] = tp.send(false);
+        const [send3, cb] = tp.send(false);
+
+        expect(send1).toEqual(send2);
+        expect(send1).toEqual(send3);
+
+        cb();
+        const [send4] = tp.send();
+        expect(send4).not.toEqual(send1);
+        expect(send4).toEqual(Buffer.allocUnsafe(0));
     });
 });
 
@@ -175,7 +202,7 @@ describe("LibTop roundtrip", () => {
         tp1.sendEventOrdered(Buffer.from("3"));
         tp1.sendEvent(Buffer.from("2"));
 
-        expect(tp2.receiveMessage(tp1.send())).toEqual({
+        expect(tp2.receiveMessage(tp1.send()[0])).toEqual({
             events: [Buffer.from("1"), Buffer.from("2")],
             eventsOrdered: [Buffer.from("3")],
         });
@@ -187,7 +214,7 @@ describe("LibTop roundtrip", () => {
         expect(tp1.callFnOrdered("sum", Buffer.from("12345"))).toEqual(3);
         expect(tp1.callFnOrdered("add")).toEqual(4);
 
-        const incMsg = tp2.receiveMessage(tp1.send());
+        const incMsg = tp2.receiveMessage(tp1.send()[0]);
         expect(incMsg).toEqual({
             rpcCalls: [
                 {
@@ -216,7 +243,7 @@ describe("LibTop roundtrip", () => {
             if (method === "sum")
                 tp2.sendFnCallResponse(id, Buffer.concat([Buffer.from([0, 0]), args || Buffer.allocUnsafe(0)]));
         });
-        const tmp = tp1.receiveMessage(tp2.send());
+        const tmp = tp1.receiveMessage(tp2.send()[0]);
         expect(tmp).toEqual({
             rpcResults: [
                 {
@@ -262,7 +289,7 @@ describe("LibTop roundtrip", () => {
         tp1.outObj.naprej.boolean = false;
         tp1.outObj.str = "test";
 
-        tp2.receiveMessage(tp1.send());
+        tp2.receiveMessage(tp1.send()[0]);
 
         expect(tp2.incObj.int).toEqual(1234);
         expect(tp2.incObj.naprej.naprej.float).toBeCloseTo(3.14, 3);
@@ -285,7 +312,7 @@ describe("LibTop roundtrip", () => {
         };
 
         tp1.outObj = testObj;
-        const msg = tp2.receiveMessage(tp1.send());
+        const msg = tp2.receiveMessage(tp1.send()[0]);
 
         expect(msg.objAll.int).toEqual(1234);
         expect(msg.objAll.naprej.naprej.float).toBeCloseTo(3.14, 3);
@@ -333,7 +360,7 @@ describe("LibTop roundtrip", () => {
         tp1.outObj.bytes = Buffer.from("12345");
         delete tp1.outObj.str;
 
-        tp2.receiveMessage(tp1.send());
+        tp2.receiveMessage(tp1.send()[0]);
 
         expect(tp2.incObj.int).toEqual(1234);
         expect(tp2.incObj.naprej.naprej.float).toBeCloseTo(3.14, 3);

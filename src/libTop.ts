@@ -330,11 +330,10 @@ export default class LibTop {
      * Emit message with all unsent data
      * @function send
      */
-    send(): Buffer {
+    send(autoConfirmChanges = true): [Buffer, Function | null] {
         const reqRpc: Record<number, RpcReqObj> = {};
         this.requests.forEach((val: FnCall, key: number) => {
             if (val.sent) return;
-            val.sent = true;
             reqRpc[key] = {
                 method: val.method,
                 args: val.args,
@@ -345,7 +344,6 @@ export default class LibTop {
         const reqRpcOrdered: Record<number, RpcReqObj> = {};
         this.requestsOrdered.forEach((val: FnCall, key: number) => {
             if (val.sent) return;
-            val.sent = true;
             reqRpcOrdered[key] = {
                 method: val.method,
             };
@@ -359,12 +357,9 @@ export default class LibTop {
                 returns: val.result.returns,
                 isError: val.result.isError ? val.result.isError : undefined,
             };
-            this.responses.delete(key);
         });
 
         const { events, eventsOrdered } = this;
-        this.events = [];
-        this.eventsOrdered = [];
 
         const finishedObject = {
             reqRpcOrdered,
@@ -375,9 +370,33 @@ export default class LibTop {
             events,
             eventsOrdered,
         };
-        this.outObjSent = cloneDeep(this.outObj);
+
         const cleanedObject = removeUndefinedAndEmpty(finishedObject);
         const buf = this.transcoder.encode(cleanedObject);
-        return buf;
+
+        const confirmChanges = () => {
+            Object.keys(reqRpc).map((key: string) => {
+                this.requests.get(parseInt(key, 10)).sent = true;
+            });
+
+            Object.keys(reqRpcOrdered).map((key: string) => {
+                this.requestsOrdered.get(parseInt(key, 10)).sent = true;
+            });
+
+            Object.keys(resRpc).map((key: string) => {
+                this.responses.delete(parseInt(key, 10));
+            });
+
+            this.events = [];
+            this.eventsOrdered = [];
+            this.outObjSent = cloneDeep(this.outObj);
+        };
+
+        if (autoConfirmChanges) {
+            confirmChanges();
+            return [buf, null];
+        }
+
+        return [buf, confirmChanges.bind(this)];
     }
 }

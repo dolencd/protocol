@@ -105,11 +105,11 @@ export class Protocol extends EventEmitter {
      */
     send(): Buffer {
         if (!this.options.enableOrdering) {
-            const msg = this.tp.send();
+            const msg = this.tp.send()[0];
             this.emit("send", msg);
             return msg;
         }
-        const msg = this.bt.send(this.tp.send());
+        const msg = this.bt.send(this.tp.send()[0]);
         this.emit("send", msg);
         return msg;
     }
