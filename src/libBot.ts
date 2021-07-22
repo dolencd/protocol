@@ -46,6 +46,9 @@ export interface ReceivedMessages {
     ordered?: Array<Buffer>;
 }
 
+/**
+ * Provides delivery and ordering guarantees for given Buffer messages with minimal overhead and few additional messages (depending on the options).
+ */
 export default class LibBot {
     private readonly options: LibBotOptions;
 

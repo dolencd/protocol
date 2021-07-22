@@ -96,8 +96,11 @@
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="protocoloptions.html#autoretransmit" class="tsd-kind-icon">auto<wbr>Retransmit</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="protocoloptions.html#deltype" class="tsd-kind-icon">del<wbr>Type</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface"><a href="protocoloptions.html#enableordering" class="tsd-kind-icon">enable<wbr>Ordering</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="protocoloptions.html#initialincobj" class="tsd-kind-icon">initial<wbr>Inc<wbr>Obj</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="protocoloptions.html#initialoutobj" class="tsd-kind-icon">initial<wbr>Out<wbr>Obj</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="protocoloptions.html#methodenumname" class="tsd-kind-icon">method<wbr>Enum<wbr>Name</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="protocoloptions.html#protopath" class="tsd-kind-icon">proto<wbr>Path</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="protocoloptions.html#restorestate" class="tsd-kind-icon">restore<wbr>State</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="protocoloptions.html#synctype" class="tsd-kind-icon">sync<wbr>Type</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="protocoloptions.html#transcoder" class="tsd-kind-icon">transcoder</a></li>
 							</ul>
@@ -114,12 +117,13 @@
 					<aside class="tsd-sources">
 						<p>Inherited from LibBotOptions.autoAckAfterMessages</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/libBot.ts#L13">src/libBot.ts:13</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/libBot.ts#L23">src/libBot.ts:23</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Automatically call sendAcks if n or more messages have been received since last sending acks.</p>
+							<p>Automatically return acks (by internally calling sendAcks) when calling receiveMessage if n or more messages have been received since last sending acks.
+							Default: off</p>
 						</div>
 					</div>
 				</section>
@@ -130,12 +134,13 @@
 					<aside class="tsd-sources">
 						<p>Inherited from LibBotOptions.autoAckOnFailedMessages</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/libBot.ts#L18">src/libBot.ts:18</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/libBot.ts#L29">src/libBot.ts:29</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Automatically call sendAcks if n or more incoming messages have been lost before being received.</p>
+							<p>Automatically return acks (by internally calling sendAcks) when calling receiveMessage if n or more incoming messages have been lost before being received.
+							Default: off</p>
 						</div>
 					</div>
 				</section>
@@ -146,12 +151,13 @@
 					<aside class="tsd-sources">
 						<p>Inherited from LibBotOptions.autoRetransmit</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/libBot.ts#L8">src/libBot.ts:8</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/libBot.ts#L17">src/libBot.ts:17</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>When a delivery failure is detected, immediately retransmit the message.</p>
+							<p>When a delivery failure is detected (when calling receiveMessage), immediately return all messages that have not been successfully delivered.
+							Default: false</p>
 						</div>
 					</div>
 				</section>
@@ -162,9 +168,14 @@
 					<aside class="tsd-sources">
 						<p>Inherited from PbTranscoderOptions.delType</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/PbTranscoder.ts#L7">src/PbTranscoder.ts:7</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/PbTranscoder.ts#L18">src/PbTranscoder.ts:18</a></li>
 						</ul>
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Name of the type to use for deleting. Must be present in the .proto file. Should be the same as the type used for syncing, but with all values being booleans. Default: &quot;objDelete&quot;</p>
+						</div>
+					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface">
 					<a name="enableordering" class="tsd-anchor"></a>
@@ -172,7 +183,7 @@
 					<div class="tsd-signature tsd-kind-icon">enable<wbr>Ordering<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L11">src/Protocol.ts:11</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L11">src/Protocol.ts:11</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -183,15 +194,52 @@
 					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="initialincobj" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> initial<wbr>Inc<wbr>Obj</h3>
+					<div class="tsd-signature tsd-kind-icon">initial<wbr>Inc<wbr>Obj<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from LibTopOptions.initialIncObj</p>
+						<ul>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/libTop.ts#L63">src/libTop.ts:63</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The object that is already synced from the remote host (incoming sync). Setting this will avoid unnecessary syncing. Ignored if restoreState is used.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="initialoutobj" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> initial<wbr>Out<wbr>Obj</h3>
+					<div class="tsd-signature tsd-kind-icon">initial<wbr>Out<wbr>Obj<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">&gt;</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from LibTopOptions.initialOutObj</p>
+						<ul>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/libTop.ts#L68">src/libTop.ts:68</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>The object that is already synced to the remote host (outgoing sync). Setting this will avoid unnecessary syncing. Ignored if restoreState is used.</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 					<a name="methodenumname" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> method<wbr>Enum<wbr>Name</h3>
 					<div class="tsd-signature tsd-kind-icon">method<wbr>Enum<wbr>Name<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 					<aside class="tsd-sources">
 						<p>Inherited from PbTranscoderOptions.methodEnumName</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/PbTranscoder.ts#L8">src/PbTranscoder.ts:8</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/PbTranscoder.ts#L23">src/PbTranscoder.ts:23</a></li>
 						</ul>
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Name of the enum to be used for the method name. Must be present in the .proto file. Default: &quot;methods&quot;</p>
+						</div>
+					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 					<a name="protopath" class="tsd-anchor"></a>
@@ -200,9 +248,30 @@
 					<aside class="tsd-sources">
 						<p>Inherited from PbTranscoderOptions.protoPath</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/PbTranscoder.ts#L5">src/PbTranscoder.ts:5</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/PbTranscoder.ts#L8">src/PbTranscoder.ts:8</a></li>
 						</ul>
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Path to the .proto file. Default: &quot;./main.proto&quot;</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="restorestate" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> restore<wbr>State</h3>
+					<div class="tsd-signature tsd-kind-icon">restore<wbr>State<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from LibBotOptions.restoreState</p>
+						<ul>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/libBot.ts#L34">src/libBot.ts:34</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Restore state of old LibTop instance. If present, other options will be ignored.</p>
+						</div>
+					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 					<a name="synctype" class="tsd-anchor"></a>
@@ -211,9 +280,14 @@
 					<aside class="tsd-sources">
 						<p>Inherited from PbTranscoderOptions.syncType</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/PbTranscoder.ts#L6">src/PbTranscoder.ts:6</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/PbTranscoder.ts#L13">src/PbTranscoder.ts:13</a></li>
 						</ul>
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>Name of the type to use for syncing. Must be present in the .proto file. Default: &quot;obj&quot;</p>
+						</div>
+					</div>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 					<a name="transcoder" class="tsd-anchor"></a>
@@ -222,9 +296,14 @@
 					<aside class="tsd-sources">
 						<p>Inherited from LibTopOptions.transcoder</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/libTop.ts#L36">src/libTop.ts:36</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/libTop.ts#L58">src/libTop.ts:58</a></li>
 						</ul>
 					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>An object that fits the Transcoder interface that will be used to encode and decode the main protocol payload</p>
+						</div>
+					</div>
 				</section>
 			</section>
 		</div>
@@ -239,7 +318,16 @@
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
 					<li class=" tsd-kind-class">
+						<a href="../classes/libbot.html" class="tsd-kind-icon">Lib<wbr>Bot</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="../classes/libtop.html" class="tsd-kind-icon">Lib<wbr>Top</a>
+					</li>
+					<li class=" tsd-kind-class">
 						<a href="../classes/protocol.html" class="tsd-kind-icon">Protocol</a>
+					</li>
+					<li class=" tsd-kind-interface">
+						<a href="errorobject.html" class="tsd-kind-icon">Error<wbr>Object</a>
 					</li>
 				</ul>
 				<ul class="current">
@@ -262,10 +350,19 @@
 								<a href="protocoloptions.html#enableordering" class="tsd-kind-icon">enable<wbr>Ordering</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+								<a href="protocoloptions.html#initialincobj" class="tsd-kind-icon">initial<wbr>Inc<wbr>Obj</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+								<a href="protocoloptions.html#initialoutobj" class="tsd-kind-icon">initial<wbr>Out<wbr>Obj</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 								<a href="protocoloptions.html#methodenumname" class="tsd-kind-icon">method<wbr>Enum<wbr>Name</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 								<a href="protocoloptions.html#protopath" class="tsd-kind-icon">proto<wbr>Path</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+								<a href="protocoloptions.html#restorestate" class="tsd-kind-icon">restore<wbr>State</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 								<a href="protocoloptions.html#synctype" class="tsd-kind-icon">sync<wbr>Type</a>
@@ -310,10 +407,11 @@
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
 			</ul>
 		</div>
 	</div>

@@ -2,10 +2,12 @@ import { encodeSessionId, encodeSeqAck } from "./transcoder";
 import { Protocol, ProtocolOptions } from "./Protocol";
 import { PbTranscoder } from "./PbTranscoder";
 
+export { default as LibTop } from "./libTop";
+export { default as LibBot } from "./libBot";
 export type { Protocol, ProtocolOptions } from "./Protocol";
 export { decodeClientId, encodeClientId, decodeSessionId, encodeSessionId } from "./transcoder";
 
-interface ErrorObject {
+export interface ErrorObject {
     code?: number;
     reason?: string;
 }
@@ -15,12 +17,12 @@ interface ErrorObject {
  * @param {ProtocolOptions} options Options to use. See ProtocolOptions.
  * @param {Buffer} initialMessage First message that was received (contains authentication information)
  * @param {(Buffer) => true | ErrorObject} authFn Gets the authentication message that was passed to createClient. If it returns true the connection is accepted. Can return an instance of ErrorObject to provide the client a reason for tha failure. If not present, all connections are accepted.
- * @returns {[Protocol, Buffer, ErrorObject]}
+ * @returns
  */
 export async function createServer(
     options: ProtocolOptions,
     initialMessage: Buffer,
-    authFn?: (authBuf: Buffer) => true | { code?: number; reason?: string }
+    authFn?: (authBuf: Buffer) => true | ErrorObject
 ): Promise<[Protocol, Buffer, ErrorObject?]> {
     const errObj: ErrorObject = {};
     const transcoder = new PbTranscoder(options);
@@ -60,7 +62,7 @@ export async function createServer(
  * Prepare a new client instance
  * @param options {ProtocolOptions} Options to use. See the ProtocolOptions page
  * @param authMessage {Buffer} Buffer containing authentication information. If present, it will be passed to the authentication function on the server.
- * @returns {[Protocol, messageToSend, ErrorObject?]}
+ * @returns
  */
 export function createClient(options: ProtocolOptions, authMessage?: Buffer): [Protocol, Buffer, ErrorObject?] {
     const transcoder = new PbTranscoder(options);

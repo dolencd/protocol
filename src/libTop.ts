@@ -122,12 +122,15 @@ function removeUndefinedAndEmpty(o: Record<string, any>) {
     return o;
 }
 
+/**
+ * Handles application-level calls and packages them into efficient opaque messages.
+ */
 export default class LibTop {
     public incObj: Record<string, any>;
 
     public outObj: Record<string, any>;
 
-    protected outObjSent: Record<string, any>;
+    private outObjSent: Record<string, any>;
 
     readonly responses: Map<number, FnCall>;
 
@@ -135,9 +138,9 @@ export default class LibTop {
 
     readonly requestsOrdered: Map<number, FnCall>;
 
-    protected events: Array<Buffer>;
+    private events: Array<Buffer>;
 
-    protected eventsOrdered: Array<Buffer>;
+    private eventsOrdered: Array<Buffer>;
 
     readonly idCreator: IdCreator;
 

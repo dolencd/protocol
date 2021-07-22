@@ -99,6 +99,8 @@
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="protocol.html#bt" class="tsd-kind-icon">bt</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="protocol.html#fncalls" class="tsd-kind-icon">fn<wbr>Calls</a></li>
+								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="protocol.html#options" class="tsd-kind-icon">options</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class"><a href="protocol.html#tp" class="tsd-kind-icon">tp</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-static tsd-is-external"><a href="protocol.html#capturerejectionsymbol" class="tsd-kind-icon">capture<wbr>Rejection<wbr>Symbol</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-static tsd-is-external"><a href="protocol.html#capturerejections" class="tsd-kind-icon">capture<wbr>Rejections</a></li>
@@ -121,6 +123,7 @@
 							<ul class="tsd-index-list">
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="protocol.html#addlistener" class="tsd-kind-icon">add<wbr>Listener</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="protocol.html#callfn" class="tsd-kind-icon">call<wbr>Fn</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="protocol.html#callfninternal" class="tsd-kind-icon">call<wbr>FnInternal</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="protocol.html#callfnordered" class="tsd-kind-icon">call<wbr>FnOrdered</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="protocol.html#emit" class="tsd-kind-icon">emit</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="protocol.html#eventnames" class="tsd-kind-icon">event<wbr>Names</a></li>
@@ -132,6 +135,7 @@
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="protocol.html#once" class="tsd-kind-icon">once</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="protocol.html#prependlistener" class="tsd-kind-icon">prepend<wbr>Listener</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="protocol.html#prependoncelistener" class="tsd-kind-icon">prepend<wbr>Once<wbr>Listener</a></li>
+								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="protocol.html#processlibtopreceivemessage" class="tsd-kind-icon">process<wbr>Lib<wbr>Top<wbr>Receive<wbr>Message</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="protocol.html#rawlisteners" class="tsd-kind-icon">raw<wbr>Listeners</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class"><a href="protocol.html#receivemessage" class="tsd-kind-icon">receive<wbr>Message</a></li>
 								<li class="tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external"><a href="protocol.html#removealllisteners" class="tsd-kind-icon">remove<wbr>All<wbr>Listeners</a></li>
@@ -161,7 +165,7 @@
 							<aside class="tsd-sources">
 								<p>Overrides EventEmitter.constructor</p>
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L34">src/Protocol.ts:34</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L38">src/Protocol.ts:38</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -187,20 +191,40 @@
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
 					<a name="bt" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagOptional">Optional</span> bt</h3>
-					<div class="tsd-signature tsd-kind-icon">bt<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">default</span></div>
+					<div class="tsd-signature tsd-kind-icon">bt<span class="tsd-signature-symbol">:</span> <a href="libbot.html" class="tsd-signature-type" data-tsd-kind="Class">LibBot</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L34">src/Protocol.ts:34</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L34">src/Protocol.ts:34</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
+					<a name="fncalls" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> fn<wbr>Calls</h3>
+					<div class="tsd-signature tsd-kind-icon">fn<wbr>Calls<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Map</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-symbol">{ </span>reject<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Function</span><span class="tsd-signature-symbol">; </span>resolve<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Function</span><span class="tsd-signature-symbol"> }</span><span class="tsd-signature-symbol">&gt;</span></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L38">src/Protocol.ts:38</a></li>
+						</ul>
+					</aside>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
+					<a name="options" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> options</h3>
+					<div class="tsd-signature tsd-kind-icon">options<span class="tsd-signature-symbol">:</span> <a href="../interfaces/protocoloptions.html" class="tsd-signature-type" data-tsd-kind="Interface">ProtocolOptions</a></div>
+					<aside class="tsd-sources">
+						<ul>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L36">src/Protocol.ts:36</a></li>
 						</ul>
 					</aside>
 				</section>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
 					<a name="tp" class="tsd-anchor"></a>
 					<h3>tp</h3>
-					<div class="tsd-signature tsd-kind-icon">tp<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">default</span></div>
+					<div class="tsd-signature tsd-kind-icon">tp<span class="tsd-signature-symbol">:</span> <a href="libtop.html" class="tsd-signature-type" data-tsd-kind="Class">LibTop</a></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L32">src/Protocol.ts:32</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L32">src/Protocol.ts:32</a></li>
 						</ul>
 					</aside>
 				</section>
@@ -276,7 +300,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L93">src/Protocol.ts:93</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L90">src/Protocol.ts:90</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -298,7 +322,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L85">src/Protocol.ts:85</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L82">src/Protocol.ts:82</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -322,7 +346,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L75">src/Protocol.ts:75</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L72">src/Protocol.ts:72</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -346,7 +370,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L65">src/Protocol.ts:65</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L62">src/Protocol.ts:62</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -370,7 +394,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L100">src/Protocol.ts:100</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L97">src/Protocol.ts:97</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -440,7 +464,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L160">src/Protocol.ts:160</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L230">src/Protocol.ts:230</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -475,6 +499,35 @@
 						</li>
 					</ul>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
+					<a name="callfninternal" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> call<wbr>FnInternal</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
+						<li class="tsd-signature tsd-kind-icon">call<wbr>FnInternal<span class="tsd-signature-symbol">(</span>fn<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Function</span>, method<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, args<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">&gt;</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L246">src/Protocol.ts:246</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>fn: <span class="tsd-signature-type">Function</span></h5>
+								</li>
+								<li>
+									<h5>method: <span class="tsd-signature-type">string</span></h5>
+								</li>
+								<li>
+									<h5><span class="tsd-flag ts-flagOptional">Optional</span> args: <span class="tsd-signature-type">Buffer</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 					<a name="callfnordered" class="tsd-anchor"></a>
 					<h3>call<wbr>FnOrdered</h3>
@@ -485,7 +538,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L172">src/Protocol.ts:172</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L242">src/Protocol.ts:242</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -856,6 +909,29 @@
 						</li>
 					</ul>
 				</section>
+				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
+					<a name="processlibtopreceivemessage" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagPrivate">Private</span> process<wbr>Lib<wbr>Top<wbr>Receive<wbr>Message</h3>
+					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
+						<li class="tsd-signature tsd-kind-icon">process<wbr>Lib<wbr>Top<wbr>Receive<wbr>Message<span class="tsd-signature-symbol">(</span>__namedParameters<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">ReceiveMessageObject</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+					</ul>
+					<ul class="tsd-descriptions">
+						<li class="tsd-description">
+							<aside class="tsd-sources">
+								<ul>
+									<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L149">src/Protocol.ts:149</a></li>
+								</ul>
+							</aside>
+							<h4 class="tsd-parameters-title">Parameters</h4>
+							<ul class="tsd-parameters">
+								<li>
+									<h5>__namedParameters: <span class="tsd-signature-type">ReceiveMessageObject</span></h5>
+								</li>
+							</ul>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+						</li>
+					</ul>
+				</section>
 				<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external">
 					<a name="rawlisteners" class="tsd-anchor"></a>
 					<h3>raw<wbr>Listeners</h3>
@@ -884,13 +960,13 @@
 					<a name="receivemessage" class="tsd-anchor"></a>
 					<h3>receive<wbr>Message</h3>
 					<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-						<li class="tsd-signature tsd-kind-icon">receive<wbr>Message<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+						<li class="tsd-signature tsd-kind-icon">receive<wbr>Message<span class="tsd-signature-symbol">(</span>event<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">ReceiveMessageObject</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">]</span></li>
 					</ul>
 					<ul class="tsd-descriptions">
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L123">src/Protocol.ts:123</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L123">src/Protocol.ts:123</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -912,7 +988,7 @@
 									</div>
 								</li>
 							</ul>
-							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">[</span><span class="tsd-signature-type">ReceiveMessageObject</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">Buffer</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">]</span></h4>
 						</li>
 					</ul>
 				</section>
@@ -995,7 +1071,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L109">src/Protocol.ts:109</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L106">src/Protocol.ts:106</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1009,7 +1085,7 @@
 								</dl>
 							</div>
 							<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Buffer</span></h4>
-							<p>Buffer to send to other side</p>
+							<p>Array of Buffers to send to other side</p>
 						</li>
 					</ul>
 				</section>
@@ -1023,7 +1099,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L138">src/Protocol.ts:138</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L208">src/Protocol.ts:208</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1059,7 +1135,7 @@
 						<li class="tsd-description">
 							<aside class="tsd-sources">
 								<ul>
-									<li>Defined in <a href="https://github.com/dolencd/protocol/blob/a5431c5/src/Protocol.ts#L148">src/Protocol.ts:148</a></li>
+									<li>Defined in <a href="https://github.com/dolencd/protocol//blob/4b91dd7/src/Protocol.ts#L218">src/Protocol.ts:218</a></li>
 								</ul>
 							</aside>
 							<div class="tsd-comment tsd-typography">
@@ -1228,6 +1304,12 @@
 			</nav>
 			<nav class="tsd-navigation secondary menu-sticky">
 				<ul class="before-current">
+					<li class=" tsd-kind-class">
+						<a href="libbot.html" class="tsd-kind-icon">Lib<wbr>Bot</a>
+					</li>
+					<li class=" tsd-kind-class">
+						<a href="libtop.html" class="tsd-kind-icon">Lib<wbr>Top</a>
+					</li>
 				</ul>
 				<ul class="current">
 					<li class="current tsd-kind-class">
@@ -1238,6 +1320,12 @@
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
 								<a href="protocol.html#bt" class="tsd-kind-icon">bt</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
+								<a href="protocol.html#fncalls" class="tsd-kind-icon">fn<wbr>Calls</a>
+							</li>
+							<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
+								<a href="protocol.html#options" class="tsd-kind-icon">options</a>
 							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-class">
 								<a href="protocol.html#tp" class="tsd-kind-icon">tp</a>
@@ -1275,6 +1363,9 @@
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="protocol.html#callfn" class="tsd-kind-icon">call<wbr>Fn</a>
 							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
+								<a href="protocol.html#callfninternal" class="tsd-kind-icon">call<wbr>FnInternal</a>
+							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class">
 								<a href="protocol.html#callfnordered" class="tsd-kind-icon">call<wbr>FnOrdered</a>
 							</li>
@@ -1307,6 +1398,9 @@
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external">
 								<a href="protocol.html#prependoncelistener" class="tsd-kind-icon">prepend<wbr>Once<wbr>Listener</a>
+							</li>
+							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
+								<a href="protocol.html#processlibtopreceivemessage" class="tsd-kind-icon">process<wbr>Lib<wbr>Top<wbr>Receive<wbr>Message</a>
 							</li>
 							<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited tsd-is-external">
 								<a href="protocol.html#rawlisteners" class="tsd-kind-icon">raw<wbr>Listeners</a>
@@ -1346,6 +1440,9 @@
 				</ul>
 				<ul class="after-current">
 					<li class=" tsd-kind-interface">
+						<a href="../interfaces/errorobject.html" class="tsd-kind-icon">Error<wbr>Object</a>
+					</li>
+					<li class=" tsd-kind-interface">
 						<a href="../interfaces/protocoloptions.html" class="tsd-kind-icon">Protocol<wbr>Options</a>
 					</li>
 					<li class=" tsd-kind-function">
@@ -1381,10 +1478,11 @@
 				<li class="tsd-kind-method tsd-parent-kind-class"><span class="tsd-kind-icon">Method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private method</span></li>
 			</ul>
 			<ul class="tsd-legend">
-				<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><span class="tsd-kind-icon">Private property</span></li>
+				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
 			</ul>
 		</div>
 	</div>
