@@ -38,7 +38,7 @@ export class PbTranscoder {
         syncType = "obj",
         delType = "objBool",
         methodEnumName = "methods",
-        JSONRoot
+        JSONRoot,
     }: PbTranscoderOptions) {
         if (JSONRoot) {
             this.root = new Root();
@@ -48,7 +48,7 @@ export class PbTranscoder {
             this.root = pbLoadSync(join(__dirname, "../protocol.proto"));
             this.root.loadSync(protoPath);
             this.type = this.root.lookupType("main");
-    
+
             this.root.lookupType("rpcCall").add(new Field("method", 3, methodEnumName));
             this.type.add(new Field("objAll", 20, syncType));
             this.type.add(new Field("objSync", 21, syncType));
@@ -56,7 +56,7 @@ export class PbTranscoder {
         }
     }
 
-    getJSONRoot(){
+    getJSONRoot() {
         return JSON.stringify(this.root.toJSON());
     }
 
