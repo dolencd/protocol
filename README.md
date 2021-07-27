@@ -1,5 +1,7 @@
 # Low bandwidth Application Protocol
 
+[![Coverage Status](https://coveralls.io/repos/github/dolencd/protocol/badge.svg?branch=main)](https://coveralls.io/github/dolencd/protocol?branch=main)
+
 The Low bandwidth application protocol is designed to allow two applications to communicate via application level calls over potentially unreliable networks with as the smallest number and size of messages possible.
 
 ## Usage
