@@ -55,4 +55,18 @@ describe("Full object", () => {
         const decoded = tc.decode(encoded);
         expect(decoded).toEqual(obj);
     });
+
+    test("Decoded obj is the same as input obj with serialization step", () => {
+        const encoded = tc.encode(obj);
+        const decoded = tc.decode(encoded);
+        expect(decoded).toEqual(obj);
+
+        const tc1 = new PbTranscoder({
+            JSONRoot: tc.getJSONRoot()
+        })
+        const encoded1 = tc1.encode(obj);
+        const decoded1 = tc1.decode(encoded1);
+        expect(encoded1).toEqual(encoded);
+        expect(decoded1).toEqual(decoded);
+    });
 });

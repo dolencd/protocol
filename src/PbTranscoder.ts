@@ -21,27 +21,43 @@ export interface PbTranscoderOptions {
      * Name of the enum to be used for the method name. Must be present in the .proto file. Default: "methods"
      */
     methodEnumName?: string;
+
+    /**
+     * JSON Representation of ProtocolBuffers Types. When passed, this will be exclusively used to initialize PbTranscoder
+     */
+    JSONRoot?: string;
 }
 
 export class PbTranscoder {
-    root: Root;
+    private root: Root;
 
-    type: Type;
+    private type: Type;
 
     constructor({
         protoPath = "./main.proto",
         syncType = "obj",
         delType = "objBool",
         methodEnumName = "methods",
+        JSONRoot
     }: PbTranscoderOptions) {
-        this.root = pbLoadSync(join(__dirname, "../protocol.proto"));
-        this.root.loadSync(protoPath);
-        this.type = this.root.lookupType("main");
+        if (JSONRoot) {
+            this.root = new Root();
+            Root.fromJSON(JSON.parse(JSONRoot), this.root);
+            this.type = this.root.lookupType("main");
+        } else {
+            this.root = pbLoadSync(join(__dirname, "../protocol.proto"));
+            this.root.loadSync(protoPath);
+            this.type = this.root.lookupType("main");
+    
+            this.root.lookupType("rpcCall").add(new Field("method", 3, methodEnumName));
+            this.type.add(new Field("objAll", 20, syncType));
+            this.type.add(new Field("objSync", 21, syncType));
+            this.type.add(new Field("objDelete", 22, delType));
+        }
+    }
 
-        this.root.lookupType("rpcCall").add(new Field("method", 3, methodEnumName));
-        this.type.add(new Field("objAll", 20, syncType));
-        this.type.add(new Field("objSync", 21, syncType));
-        this.type.add(new Field("objDelete", 22, delType));
+    getJSONRoot(){
+        return JSON.stringify(this.root.toJSON());
     }
 
     decode(buf: Buffer) {
