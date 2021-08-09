@@ -9,6 +9,7 @@ const tc = new PbTranscoder({
 
 describe("Full object", () => {
     const obj = {
+        auth: Buffer.from("123456"),
         objAll: {
             int: 123,
             naprej: {
@@ -68,5 +69,39 @@ describe("Full object", () => {
         const decoded1 = tc1.decode(encoded1);
         expect(encoded1).toEqual(encoded);
         expect(decoded1).toEqual(decoded);
+    });
+
+    test("static methods", () => {
+        const objGeneral = {
+            auth: Buffer.from("123456"),
+            events: [Buffer.from("123"), Buffer.from("456")],
+            eventsOrdered: [Buffer.from("1234"), Buffer.from("5678")],
+            code: 200,
+            codes: [1, 2, 3, 4],
+            reason: "asdf",
+            reqRpc: {
+                1: {
+                    args: Buffer.from("1234"),
+                },
+            },
+            reqRpcOrdered: {
+                2: {},
+            },
+            resRpc: {
+                3: {
+                    returns: Buffer.from("12345"),
+                },
+            },
+        };
+
+        const encodedFullFull = tc.encode(obj);
+        const encodedFullGeneral = tc.encode(objGeneral);
+        const encodedStaticFull = PbTranscoder.encode(obj);
+        const encodedStaticGeneral = PbTranscoder.encode(objGeneral);
+
+        expect(encodedStaticGeneral).toEqual(encodedStaticFull);
+        expect(encodedStaticGeneral).toEqual(encodedFullGeneral);
+        expect(PbTranscoder.decode(encodedFullFull)).toEqual(objGeneral);
+        expect(PbTranscoder.decode(encodedStaticGeneral)).toEqual(objGeneral);
     });
 });
