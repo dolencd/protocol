@@ -32,6 +32,9 @@ export interface PbTranscoderOptions {
     JSONRoot?: string;
 }
 
+/**
+ * Transcodes objects according to the protocol buffers spec.
+ */
 export class PbTranscoder {
     private root: Root;
 
@@ -66,10 +69,20 @@ export class PbTranscoder {
         this.type.add(new Field("objDelete", 22, delType));
     }
 
-    getJSONRoot() {
+    /**
+     * Returns the string representation of the transcoder. Used for saving and restoring.
+     * @returns The state string.
+     */
+    getJSONRoot(): string {
         return this.JSONRoot;
     }
 
+    /**
+     * Decodes the buffer according to the provided type. Uses the general protocol main type by default. Does not decode service-specific information.
+     * @param buf Buffer to decode
+     * @param type Type used to decode. Defaults to main protocol type.
+     * @returns The decoded object
+     */
     static decode(buf: Buffer, type = mainType) {
         const msg = type.decode(buf);
         const obj = type.toObject(msg, {
@@ -79,10 +92,21 @@ export class PbTranscoder {
         return obj;
     }
 
+    /**
+     * Decodes entire protocol object according to the given service spec.
+     * @param buf Buffer to decode
+     * @returns The decoded object
+     */
     decode(buf: Buffer) {
         return PbTranscoder.decode(buf, this.type);
     }
 
+    /**
+     * Encodes the object according to the provided type. Uses the general protocol main type by default. Does not encode service-specific information.
+     * @param obj Object to encode
+     * @param type Type used to encode. Defaults to main protocol type.
+     * @returns The encoded Buffer
+     */
     static encode(obj: Record<string, any>, type = mainType) {
         // const err = this.mainType.verify(obj)
         // if(err) {
@@ -95,6 +119,11 @@ export class PbTranscoder {
         return buf;
     }
 
+    /**
+     * Encodes entire protocol object according to the given service spec.
+     * @param obj Object to encode
+     * @returns Encoded Buffer.
+     */
     encode(obj: Record<string, any>) {
         return PbTranscoder.encode(obj, this.type);
     }
