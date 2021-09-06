@@ -91,6 +91,7 @@
 						<section class="tsd-index-section ">
 							<h3>Properties</h3>
 							<ul class="tsd-index-list">
+								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="protocoloptions.html#jsonroot" class="tsd-kind-icon">JSONRoot</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="protocoloptions.html#autoackaftermessages" class="tsd-kind-icon">auto<wbr>Ack<wbr>After<wbr>Messages</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="protocoloptions.html#autoackonfailedmessages" class="tsd-kind-icon">auto<wbr>Ack<wbr>OnFailed<wbr>Messages</a></li>
 								<li class="tsd-kind-property tsd-parent-kind-interface tsd-is-inherited"><a href="protocoloptions.html#autoretransmit" class="tsd-kind-icon">auto<wbr>Retransmit</a></li>
@@ -111,13 +112,29 @@
 			<section class="tsd-panel-group tsd-member-group ">
 				<h2>Properties</h2>
 				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+					<a name="jsonroot" class="tsd-anchor"></a>
+					<h3><span class="tsd-flag ts-flagOptional">Optional</span> JSONRoot</h3>
+					<div class="tsd-signature tsd-kind-icon">JSONRoot<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
+					<aside class="tsd-sources">
+						<p>Inherited from PbTranscoderOptions.JSONRoot</p>
+						<ul>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/29deacb/src/PbTranscoder.ts#L32">src/PbTranscoder.ts:32</a></li>
+						</ul>
+					</aside>
+					<div class="tsd-comment tsd-typography">
+						<div class="lead">
+							<p>JSON Representation of ProtocolBuffers Types. When passed, this will be exclusively used to initialize PbTranscoder</p>
+						</div>
+					</div>
+				</section>
+				<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 					<a name="autoackaftermessages" class="tsd-anchor"></a>
 					<h3><span class="tsd-flag ts-flagOptional">Optional</span> auto<wbr>Ack<wbr>After<wbr>Messages</h3>
 					<div class="tsd-signature tsd-kind-icon">auto<wbr>Ack<wbr>After<wbr>Messages<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">number</span></div>
 					<aside class="tsd-sources">
 						<p>Inherited from LibBotOptions.autoAckAfterMessages</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/00b51bd/src/libBot.ts#L23">src/libBot.ts:23</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/29deacb/src/libBot.ts#L23">src/libBot.ts:23</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -134,7 +151,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from LibBotOptions.autoAckOnFailedMessages</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/00b51bd/src/libBot.ts#L29">src/libBot.ts:29</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/29deacb/src/libBot.ts#L29">src/libBot.ts:29</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -151,7 +168,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from LibBotOptions.autoRetransmit</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/00b51bd/src/libBot.ts#L17">src/libBot.ts:17</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/29deacb/src/libBot.ts#L17">src/libBot.ts:17</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -168,12 +185,12 @@
 					<aside class="tsd-sources">
 						<p>Inherited from PbTranscoderOptions.delType</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/00b51bd/src/PbTranscoder.ts#L18">src/PbTranscoder.ts:18</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/29deacb/src/PbTranscoder.ts#L22">src/PbTranscoder.ts:22</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
 						<div class="lead">
-							<p>Name of the type to use for deleting. Must be present in the .proto file. Should be the same as the type used for syncing, but with all values being booleans. Default: &quot;objDelete&quot;</p>
+							<p>Name of the type to use for deleting. Must be present in the .proto file. Should be the same as the type used for syncing, but with all values being booleans. Default: &quot;objBool&quot;</p>
 						</div>
 					</div>
 				</section>
@@ -183,7 +200,7 @@
 					<div class="tsd-signature tsd-kind-icon">enable<wbr>Ordering<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 					<aside class="tsd-sources">
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/00b51bd/src/Protocol.ts#L11">src/Protocol.ts:11</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/29deacb/src/Protocol.ts#L11">src/Protocol.ts:11</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -200,7 +217,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from LibTopOptions.initialIncObj</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/00b51bd/src/libTop.ts#L63">src/libTop.ts:63</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/29deacb/src/libTop.ts#L63">src/libTop.ts:63</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -216,7 +233,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from LibTopOptions.initialOutObj</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/00b51bd/src/libTop.ts#L68">src/libTop.ts:68</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/29deacb/src/libTop.ts#L68">src/libTop.ts:68</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -232,7 +249,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from PbTranscoderOptions.methodEnumName</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/00b51bd/src/PbTranscoder.ts#L23">src/PbTranscoder.ts:23</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/29deacb/src/PbTranscoder.ts#L27">src/PbTranscoder.ts:27</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -248,7 +265,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from PbTranscoderOptions.protoPath</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/00b51bd/src/PbTranscoder.ts#L8">src/PbTranscoder.ts:8</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/29deacb/src/PbTranscoder.ts#L12">src/PbTranscoder.ts:12</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -264,7 +281,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from LibBotOptions.restoreState</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/00b51bd/src/libBot.ts#L34">src/libBot.ts:34</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/29deacb/src/libBot.ts#L34">src/libBot.ts:34</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -280,7 +297,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from PbTranscoderOptions.syncType</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/00b51bd/src/PbTranscoder.ts#L13">src/PbTranscoder.ts:13</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/29deacb/src/PbTranscoder.ts#L17">src/PbTranscoder.ts:17</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -296,7 +313,7 @@
 					<aside class="tsd-sources">
 						<p>Inherited from LibTopOptions.transcoder</p>
 						<ul>
-							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/00b51bd/src/libTop.ts#L58">src/libTop.ts:58</a></li>
+							<li>Defined in <a href="https://github.com/dolencd/protocol//blob/29deacb/src/libTop.ts#L58">src/libTop.ts:58</a></li>
 						</ul>
 					</aside>
 					<div class="tsd-comment tsd-typography">
@@ -324,6 +341,9 @@
 						<a href="../classes/libtop.html" class="tsd-kind-icon">Lib<wbr>Top</a>
 					</li>
 					<li class=" tsd-kind-class">
+						<a href="../classes/pbtranscoder.html" class="tsd-kind-icon">Pb<wbr>Transcoder</a>
+					</li>
+					<li class=" tsd-kind-class">
 						<a href="../classes/protocol.html" class="tsd-kind-icon">Protocol</a>
 					</li>
 					<li class=" tsd-kind-interface">
@@ -334,6 +354,9 @@
 					<li class="current tsd-kind-interface">
 						<a href="protocoloptions.html" class="tsd-kind-icon">Protocol<wbr>Options</a>
 						<ul>
+							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
+								<a href="protocoloptions.html#jsonroot" class="tsd-kind-icon">JSONRoot</a>
+							</li>
 							<li class=" tsd-kind-property tsd-parent-kind-interface tsd-is-inherited">
 								<a href="protocoloptions.html#autoackaftermessages" class="tsd-kind-icon">auto<wbr>Ack<wbr>After<wbr>Messages</a>
 							</li>
@@ -392,6 +415,12 @@
 					<li class=" tsd-kind-function">
 						<a href="../modules.html#encodesessionid" class="tsd-kind-icon">encode<wbr>Session<wbr>Id</a>
 					</li>
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#parse" class="tsd-kind-icon">parse</a>
+					</li>
+					<li class=" tsd-kind-function">
+						<a href="../modules.html#stringify" class="tsd-kind-icon">stringify</a>
+					</li>
 				</ul>
 			</nav>
 		</div>
@@ -412,6 +441,9 @@
 			</ul>
 			<ul class="tsd-legend">
 				<li class="tsd-kind-property tsd-parent-kind-interface"><span class="tsd-kind-icon">Property</span></li>
+			</ul>
+			<ul class="tsd-legend">
+				<li class="tsd-kind-method tsd-parent-kind-class tsd-is-static"><span class="tsd-kind-icon">Static method</span></li>
 			</ul>
 		</div>
 	</div>

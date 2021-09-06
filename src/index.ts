@@ -1,7 +1,10 @@
 import { encodeSessionId, encodeSeqAck } from "./transcoder";
 import { Protocol, ProtocolOptions } from "./Protocol";
+
 import { PbTranscoder } from "./PbTranscoder";
 
+export * from "./serializer";
+export { PbTranscoder } from "./PbTranscoder";
 export { default as LibTop } from "./libTop";
 export { default as LibBot } from "./libBot";
 export type { Protocol, ProtocolOptions } from "./Protocol";
