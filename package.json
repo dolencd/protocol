@@ -1,6 +1,6 @@
 {
   "name": "lap-protocol",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "The Low bandwidth Application Protocol simplifies the communication of applications connected by low bandwidth links.",
   "keywords": [
     "IoT",
@@ -15,7 +15,7 @@
     "format": "prettier --write 'src/**/*.{ts,tsx}'",
     "build": "./scripts/build.sh",
     "prepublishOnly": "yarn fullcheck",
-    "fullcheck": "yarn lint --fix && yarn test && yarn build"
+    "fullcheck": "yarn lint --fix && yarn format && yarn test && yarn build"
   },
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
