@@ -6,7 +6,7 @@ import { PbTranscoder } from "./PbTranscoder";
 export * from "./serializer";
 export { PbTranscoder } from "./PbTranscoder";
 export { default as LibTop } from "./libTop";
-export { default as LibBot } from "./libBot";
+export { default as LibBot, ReceivedMessage, ReceivedMessageType } from "./libBot";
 export type { Protocol, ProtocolOptions } from "./Protocol";
 export { decodeClientId, encodeClientId, decodeSessionId, encodeSessionId } from "./transcoder";
 

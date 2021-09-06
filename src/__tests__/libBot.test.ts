@@ -1,4 +1,4 @@
-import LibBot from "../libBot";
+import LibBot, { ReceivedMessageType } from "../libBot";
 
 describe("Full cycle", () => {
     test("Perfect transmission", () => {
@@ -12,12 +12,28 @@ describe("Full cycle", () => {
             const b = Buffer.from([i]);
             inputArr.push(b);
             const [, transmissionObj] = bt2.receiveMessage(bt1.send(b));
-            outArr.push(transmissionObj.newMessage);
-            if (transmissionObj.ordered) {
-                transmissionObj.ordered.map((buf) => {
-                    outArrOrdered.push(buf);
-                });
-            }
+
+            transmissionObj.map((msgObj) => {
+                switch (msgObj.type) {
+                    case ReceivedMessageType.unordered:
+                        outArr.push(msgObj.msg);
+                        break;
+                    case ReceivedMessageType.ordered:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                    default:
+                        outArr.push(msgObj.msg);
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                }
+            });
+
+            // outArr.push(transmissionObj.newMessage);
+            // if (transmissionObj.ordered) {
+            //     transmissionObj.ordered.map((buf) => {
+            //         outArrOrdered.push(buf);
+            //     });
+            // }
         }
 
         expect(outArr).toEqual(inputArr);
@@ -54,12 +70,20 @@ describe("Full cycle", () => {
 
         messagesInTransit.reverse().map((msg) => {
             const [, transmissionObj] = bt2.receiveMessage(msg);
-            outArr.push(transmissionObj.newMessage);
-            if (transmissionObj.ordered) {
-                transmissionObj.ordered.map((buf) => {
-                    outArrOrdered.push(buf);
-                });
-            }
+            transmissionObj.map((msgObj) => {
+                switch (msgObj.type) {
+                    case ReceivedMessageType.unordered:
+                        outArr.push(msgObj.msg);
+                        break;
+                    case ReceivedMessageType.ordered:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                    default:
+                        outArr.push(msgObj.msg);
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                }
+            });
         });
 
         expect(outArrOrdered).toEqual(inputArr);
@@ -102,11 +126,18 @@ describe("Full cycle", () => {
 
             const [, transmissionObj] = bt2.receiveMessage(msg);
 
-            if (transmissionObj.ordered) {
-                transmissionObj.ordered.map((buf) => {
-                    outArrOrdered.push(buf);
-                });
-            }
+            transmissionObj.map((msgObj) => {
+                switch (msgObj.type) {
+                    case ReceivedMessageType.unordered:
+                        break;
+                    case ReceivedMessageType.ordered:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                    default:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                }
+            });
         }
 
         expect(bt1.failedReceiveMessageCount).toEqual(0);
@@ -121,11 +152,18 @@ describe("Full cycle", () => {
         failedMessages.map((msg) => {
             const [, transmissionObj] = bt2.receiveMessage(msg);
 
-            if (transmissionObj.ordered) {
-                transmissionObj.ordered.map((buf) => {
-                    outArrOrdered.push(buf);
-                });
-            }
+            transmissionObj.map((msgObj) => {
+                switch (msgObj.type) {
+                    case ReceivedMessageType.unordered:
+                        break;
+                    case ReceivedMessageType.ordered:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                    default:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                }
+            });
         });
 
         expect(outArrOrdered).toEqual(inputArr);
@@ -161,11 +199,18 @@ describe("Full cycle", () => {
             expect(msg[0]).toBeLessThanOrEqual(100);
             const [, transmissionObj] = bt2.receiveMessage(msg);
 
-            if (transmissionObj.ordered) {
-                transmissionObj.ordered.map((buf) => {
-                    outArrOrdered.push(buf);
-                });
-            }
+            transmissionObj.map((msgObj) => {
+                switch (msgObj.type) {
+                    case ReceivedMessageType.unordered:
+                        break;
+                    case ReceivedMessageType.ordered:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                    default:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                }
+            });
         }
 
         expect(bt1.maxIncSeq).toEqual(0);
@@ -209,11 +254,18 @@ describe("Full cycle", () => {
             count++;
             if (count % 3 === 0) return;
             const [messagesToSend, transmissionObj] = bt2.receiveMessage(msg);
-            if (transmissionObj.ordered) {
-                transmissionObj.ordered.map((buf) => {
-                    outArrOrdered.push(buf);
-                });
-            }
+            transmissionObj.map((msgObj) => {
+                switch (msgObj.type) {
+                    case ReceivedMessageType.unordered:
+                        break;
+                    case ReceivedMessageType.ordered:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                    default:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                }
+            });
             // eslint-disable-next-line no-loop-func
             messagesToSend.map((m) => {
                 count++;
@@ -266,12 +318,20 @@ describe("Full cycle", () => {
             bt1 = new LibBot({ restoreState: bt1.getLibState() });
             bt2 = new LibBot({ restoreState: bt2.getLibState() });
             const [, transmissionObj] = bt2.receiveMessage(bt1.send(b));
-            outArr.push(transmissionObj.newMessage);
-            if (transmissionObj.ordered) {
-                transmissionObj.ordered.map((buf) => {
-                    outArrOrdered.push(buf);
-                });
-            }
+            transmissionObj.map((msgObj) => {
+                switch (msgObj.type) {
+                    case ReceivedMessageType.unordered:
+                        outArr.push(msgObj.msg);
+                        break;
+                    case ReceivedMessageType.ordered:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                    default:
+                        outArr.push(msgObj.msg);
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                }
+            });
         }
 
         expect(outArr).toEqual(inputArr);
@@ -319,11 +379,18 @@ describe("Full cycle", () => {
             count++;
             if (count % 3 === 0) return;
             const [messagesToSend, transmissionObj] = bt2.receiveMessage(msg);
-            if (transmissionObj.ordered) {
-                transmissionObj.ordered.map((buf) => {
-                    outArrOrdered.push(buf);
-                });
-            }
+            transmissionObj.map((msgObj) => {
+                switch (msgObj.type) {
+                    case ReceivedMessageType.unordered:
+                        break;
+                    case ReceivedMessageType.ordered:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                    default:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                }
+            });
             bt1 = new LibBot({ restoreState: bt1.getLibState() });
             bt2 = new LibBot({ restoreState: bt2.getLibState() });
             // eslint-disable-next-line no-loop-func

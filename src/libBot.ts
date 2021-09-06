@@ -34,16 +34,22 @@ export interface LibBotOptions {
     restoreState?: string;
 }
 
-export interface ReceivedMessages {
+export interface ReceivedMessage {
     /**
-     * New message that was just received (unordered)
+     * The message.
      */
-    newMessage?: Buffer;
+    msg: Buffer;
 
     /**
-     * Represents messages that have been received in order.
+     * Type of message. If unspecified it is treated as "full".
      */
-    ordered?: Array<Buffer>;
+    type?: ReceivedMessageType;
+}
+
+export enum ReceivedMessageType {
+    full = "full",
+    ordered = "ordered",
+    unordered = "unordered",
 }
 
 /**
@@ -260,7 +266,7 @@ export default class LibBot {
      * @param  {Buffer} message
      * @returns An array of messages to send and the processed received messages
      */
-    receiveMessage(buf: Buffer): [Array<Buffer>, ReceivedMessages | null] {
+    receiveMessage(buf: Buffer): [Array<Buffer>, Array<ReceivedMessage> | null] {
         const output: Array<Buffer> = [];
 
         // eslint-disable-next-line prefer-const
@@ -346,9 +352,21 @@ export default class LibBot {
             output.push(this.sendAcks());
         }
 
-        const outputReceivedMessages: ReceivedMessages = {};
-        if (payload.length > 0) outputReceivedMessages.newMessage = payload;
-        if (orderedMessages.length > 0) outputReceivedMessages.ordered = orderedMessages;
+        const outputReceivedMessages: Array<ReceivedMessage> = [];
+        if (payload.length > 0) {
+            outputReceivedMessages.push({
+                msg: payload,
+                type: orderedMessages.includes(payload) ? ReceivedMessageType.full : ReceivedMessageType.unordered,
+            });
+        }
+
+        orderedMessages.map((msg) => {
+            if (msg === payload) return;
+            outputReceivedMessages.push({
+                msg,
+                type: ReceivedMessageType.ordered,
+            });
+        });
 
         return [output, outputReceivedMessages];
     }

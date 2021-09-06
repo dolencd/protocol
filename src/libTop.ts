@@ -1,5 +1,5 @@
 import { isEmpty, cloneDeep } from "lodash";
-import { ReceivedMessages } from "./libBot";
+import { ReceivedMessage, ReceivedMessageType } from "./libBot";
 import * as differ from "./differ";
 import IdCreator from "./idCreator";
 import { stringify as serializerStringify, parse as serializerParse } from "./serializer";
@@ -282,90 +282,88 @@ export default class LibTop {
     }
 
     /**
-     * Accepts and processes messages coming from the other side.
-     * @param msg Received message, either as a pure Buffer (treated as a single message, both ordered and unordered) or as a ReceivedMessages produced by LibBot.
+     * Accepts and processes a message coming from the other side.
+     * @param msgs Array of ReceivedMessage objects or a single ReceivedMessage object or a Buffer that will be treated as a single complete full message.
      * @returns Object containing the processed message
      */
-    receiveMessage(msg: ReceivedMessages | Buffer): ReceiveMessageObject {
-        if (Buffer.isBuffer(msg)) {
-            msg = {
-                newMessage: msg,
-            };
-        }
-
-        if (!msg.ordered) {
-            msg.ordered = [msg.newMessage];
+    receiveMessage(msgs: Array<ReceivedMessage> | ReceivedMessage | Buffer): ReceiveMessageObject {
+        let input: Array<ReceivedMessage>;
+        if (Buffer.isBuffer(msgs)) {
+            input = [{ msg: msgs }];
+        } else if (!Array.isArray(msgs)) {
+            input = [msgs];
+        } else {
+            input = msgs;
         }
 
         const outputObj: ReceiveMessageObject = {
             events: [],
             eventsOrdered: [],
             rpcCalls: [],
+            rpcResults: [],
         };
 
-        if (msg.newMessage) {
-            const obj: ProtocolObject = this.transcoder.decode(msg.newMessage);
+        const oldIncObj = this.incObj;
+        input.map((msg) => {
+            const obj: ProtocolObject = this.transcoder.decode(msg.msg);
+            if (msg.type !== ReceivedMessageType.ordered) {
+                // console.log("top decoded", obj)
+                if (obj.events)
+                    obj.events.map((b: Buffer) => {
+                        outputObj.events.push(b);
+                    });
 
-            // console.log("top decoded", obj)
-            if (obj.events)
-                obj.events.map((b: Buffer) => {
-                    outputObj.events.push(b);
-                });
-
-            if (obj.reqRpc) {
-                this.receiveFnCalls(obj.reqRpc).map((f: FnCall) => {
-                    outputObj.rpcCalls.push(f);
-                });
-            }
-
-            // receive rpc - responses that were received
-            if (obj.resRpc) {
-                outputObj.rpcResults = this.receiveFnResults(obj.resRpc);
-            }
-        }
-
-        msg.ordered.map((buf) => {
-            // console.log("top accept", binMsg.length)
-            const obj: ProtocolObject = this.transcoder.decode(buf);
-
-            // console.log("top decoded", obj)
-            if (obj.eventsOrdered) {
-                obj.eventsOrdered.map((b: Buffer) => {
-                    outputObj.eventsOrdered.push(b);
-                });
-            }
-
-            // send rpc - what i want the other process to do
-            // receive fn to run
-            if (obj.reqRpcOrdered) {
-                this.receiveFnCalls(obj.reqRpcOrdered).map((f: FnCall) => {
-                    outputObj.rpcCalls.push(f);
-                });
-            }
-
-            if (obj.objAll) {
-                this.incObj = obj.objAll;
-
-                if (obj.objSync || obj.objDelete) {
-                    console.error("Got message with objAll AND objSync or objDelete. Ignoring them");
-                }
-            } else {
-                if (obj.objSync) {
-                    this.receiveObjSync(obj.objSync);
-                    outputObj.objSync = obj.objSync;
+                if (obj.reqRpc) {
+                    this.receiveFnCalls(obj.reqRpc).map((f: FnCall) => {
+                        outputObj.rpcCalls.push(f);
+                    });
                 }
 
-                if (obj.objDelete) {
-                    this.receiveObjDelete(obj.objDelete);
-                    outputObj.objDelete = obj.objDelete;
+                // receive rpc - responses that were received
+                if (obj.resRpc) {
+                    this.receiveFnResults(obj.resRpc).map((res) => {
+                        outputObj.rpcResults.push(res);
+                    });
                 }
             }
 
-            if (obj.objAll || obj.objSync || obj.objDelete) {
-                outputObj.objAll = cloneDeep(this.incObj);
+            if (msg.type !== ReceivedMessageType.unordered) {
+                // console.log("top decoded", obj)
+                if (obj.eventsOrdered) {
+                    obj.eventsOrdered.map((b: Buffer) => {
+                        outputObj.eventsOrdered.push(b);
+                    });
+                }
+
+                // send rpc - what i want the other process to do
+                // receive fn to run
+                if (obj.reqRpcOrdered) {
+                    this.receiveFnCalls(obj.reqRpcOrdered).map((f: FnCall) => {
+                        outputObj.rpcCalls.push(f);
+                    });
+                }
+
+                if (obj.objAll) {
+                    this.incObj = obj.objAll;
+
+                    if (obj.objSync || obj.objDelete) {
+                        console.error("Got message with objAll AND objSync or objDelete. Ignoring them");
+                    }
+                } else {
+                    if (obj.objSync) {
+                        this.receiveObjSync(obj.objSync);
+                    }
+
+                    if (obj.objDelete) {
+                        this.receiveObjDelete(obj.objDelete);
+                    }
+                }
             }
         });
 
+        outputObj.objSync = differ.getSync(oldIncObj, this.incObj);
+        outputObj.objDelete = differ.getDelete(oldIncObj, this.incObj);
+        outputObj.objAll = this.incObj;
         return removeUndefinedAndEmpty(outputObj);
     }
 

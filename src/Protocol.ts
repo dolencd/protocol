@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import LibBot, { LibBotOptions, ReceivedMessages } from "./libBot";
+import LibBot, { LibBotOptions, ReceivedMessage } from "./libBot";
 import LibTop, { FnCall, LibTopOptions, ReceiveMessageObject } from "./libTop";
 import { PbTranscoderOptions } from "./PbTranscoder";
 
@@ -129,7 +129,7 @@ export class Protocol extends EventEmitter {
             return [processedMsg, []];
         }
 
-        const [messages, processedMessage]: [Array<Buffer>, ReceivedMessages] = this.bt.receiveMessage.call(
+        const [messages, processedMessage]: [Array<Buffer>, Array<ReceivedMessage>] = this.bt.receiveMessage.call(
             this.bt,
             event
         );
