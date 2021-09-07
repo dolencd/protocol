@@ -63,7 +63,7 @@ describe("Full object", () => {
         expect(decoded).toEqual(obj);
 
         const tc1 = new PbTranscoder({
-            JSONRoot: tc.getJSONRoot(),
+            restoreState: tc.getState(),
         });
         const encoded1 = tc1.encode(obj);
         const decoded1 = tc1.decode(encoded1);

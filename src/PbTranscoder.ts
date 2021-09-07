@@ -29,7 +29,7 @@ export interface PbTranscoderOptions {
     /**
      * JSON Representation of ProtocolBuffers Types. When passed, this will be exclusively used to initialize PbTranscoder
      */
-    JSONRoot?: string;
+    restoreState?: string;
 }
 
 /**
@@ -40,41 +40,65 @@ export class PbTranscoder {
 
     private type: Type;
 
-    readonly JSONRoot: string;
+    readonly JSONRoot: Record<string, any>;
+
+    readonly syncType: string;
+
+    readonly delType: string;
+
+    readonly methodEnumName: string;
 
     constructor({
         protoPath,
         syncType = "obj",
         delType = "objBool",
         methodEnumName = "methods",
-        JSONRoot,
+        restoreState,
     }: PbTranscoderOptions) {
         this.root = new Root();
-        if (JSONRoot) {
-            Root.fromJSON(JSON.parse(JSONRoot), this.root);
-            this.JSONRoot = JSONRoot;
+        if (restoreState) {
+            const parsedSavedState: {
+                JSONRoot: Record<string, any>;
+                syncType: string;
+                delType: string;
+                methodEnumName: string;
+            } = JSON.parse(restoreState);
+
+            Root.fromJSON(parsedSavedState.JSONRoot, this.root);
+            this.JSONRoot = parsedSavedState.JSONRoot;
+            this.syncType = parsedSavedState.syncType;
+            this.delType = parsedSavedState.delType;
+            this.methodEnumName = parsedSavedState.methodEnumName;
         } else if (protoPath) {
             this.root.loadSync(protoPath);
-            this.JSONRoot = JSON.stringify(this.root.toJSON());
+            this.JSONRoot = this.root.toJSON();
+            this.syncType = syncType;
+            this.delType = delType;
+            this.methodEnumName = methodEnumName;
         } else {
             // error
         }
 
         Root.fromJSON(mainRootObj, this.root);
 
-        this.root.lookupType("rpcCall").add(new Field("method", 3, methodEnumName));
+        this.root.lookupType("rpcCall").add(new Field("method", 3, this.methodEnumName));
         this.type = this.root.lookupType("main");
-        this.type.add(new Field("objAll", 20, syncType));
-        this.type.add(new Field("objSync", 21, syncType));
-        this.type.add(new Field("objDelete", 22, delType));
+        this.type.add(new Field("objAll", 20, this.syncType));
+        this.type.add(new Field("objSync", 21, this.syncType));
+        this.type.add(new Field("objDelete", 22, this.delType));
     }
 
     /**
      * Returns the string representation of the transcoder. Used for saving and restoring.
      * @returns The state string.
      */
-    getJSONRoot(): string {
-        return this.JSONRoot;
+    getState(): string {
+        return JSON.stringify({
+            JSONRoot: this.JSONRoot,
+            syncType: this.syncType,
+            delType: this.delType,
+            methodEnumName: this.methodEnumName,
+        });
     }
 
     /**
