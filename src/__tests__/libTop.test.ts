@@ -238,10 +238,20 @@ describe("LibTop roundtrip", () => {
             ],
         });
         incMsg.rpcCalls.map(({ id, method, args }) => {
-            if (method === "add")
-                tp2.sendFnCallResponse(id, Buffer.concat([Buffer.from([0, 0]), args || Buffer.allocUnsafe(0)]));
-            if (method === "sum")
-                tp2.sendFnCallResponse(id, Buffer.concat([Buffer.from([0, 0]), args || Buffer.allocUnsafe(0)]));
+            if (method === "add") {
+                if (args) {
+                    tp2.sendFnCallResponse(id, Buffer.concat([Buffer.from([0, 0]), args]), true);
+                } else {
+                    tp2.sendFnCallResponse(id, null, true);
+                }
+            }
+            if (method === "sum") {
+                if (args) {
+                    tp2.sendFnCallResponse(id, Buffer.concat([Buffer.from([0, 0]), args]));
+                } else {
+                    tp2.sendFnCallResponse(id);
+                }
+            }
         });
         const tmp = tp1.receiveMessage({ msg: tp2.send()[0] });
         expect(tmp).toEqual({
@@ -252,6 +262,7 @@ describe("LibTop roundtrip", () => {
                     id: 1,
                     result: {
                         returns: Buffer.concat([Buffer.alloc(2), Buffer.from("12345")]),
+                        isError: true,
                     },
                 },
                 {
@@ -274,6 +285,7 @@ describe("LibTop roundtrip", () => {
                     id: 4,
                     result: {
                         returns: Buffer.alloc(2),
+                        isError: true,
                     },
                 },
             ],
