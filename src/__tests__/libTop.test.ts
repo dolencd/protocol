@@ -268,9 +268,7 @@ describe("LibTop roundtrip", () => {
                 {
                     method: "sum",
                     id: 2,
-                    result: {
-                        returns: Buffer.alloc(2),
-                    },
+                    result: {},
                 },
                 {
                     method: "sum",
@@ -284,7 +282,6 @@ describe("LibTop roundtrip", () => {
                     method: "add",
                     id: 4,
                     result: {
-                        returns: Buffer.alloc(2),
                         isError: true,
                     },
                 },

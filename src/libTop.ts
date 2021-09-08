@@ -205,7 +205,7 @@ export default class LibTop {
      * @param returns Optional response Buffer
      * @param isError Set to true to signify an error, ignore otherwise.
      */
-    sendFnCallResponse(id: number, returns: Buffer | null, isError = false): void {
+    sendFnCallResponse(id: number, returns: Buffer | null = null, isError = false): void {
         const callObj = this.responses.get(id);
         if (!callObj) {
             throw new Error("Attempted to send response to a method call that doesn't exist");
@@ -358,12 +358,14 @@ export default class LibTop {
     private callFnInternal(requestsMap: Map<number, FnCall>, method: string, args?: Buffer) {
         const id = this.idCreator.next();
 
-        requestsMap.set(id, {
+        const fnCall: FnCall = {
             method,
-            args,
             id,
             sent: false,
-        });
+        };
+
+        if (args) fnCall.args = args;
+        requestsMap.set(id, fnCall);
 
         return id;
     }
@@ -418,7 +420,6 @@ export default class LibTop {
             if (val.sent) return;
             reqRpc[key] = {
                 method: val.method,
-                args: val.args,
             };
             if (val.args) reqRpc[key].args = val.args;
         });
@@ -435,15 +436,14 @@ export default class LibTop {
         const resRpc: Record<number, RpcResObj> = {};
         this.responses.forEach((val: FnCall, key: number) => {
             if (!val.result) return;
-            resRpc[key] = {
-                returns: val.result.returns,
-                isError: val.result.isError ? val.result.isError : undefined,
-            };
+            resRpc[key] = {};
+
+            if (val.result.returns) resRpc[key].returns = val.result.returns;
+            if (val.result.isError === true) resRpc[key].isError = true;
         });
+
         const objDelete = differ.getDelete(this.outObjSent, this.outObj);
         const objSync = differ.getSync(this.outObjSent, this.outObj);
-
-        const { events, eventsOrdered } = this;
 
         const finishedObject: ProtocolObject = {};
 
@@ -452,8 +452,8 @@ export default class LibTop {
         if (!isEmpty(resRpc)) finishedObject.resRpc = resRpc;
         if (!isEmpty(objSync)) finishedObject.objSync = objSync;
         if (!isEmpty(objDelete)) finishedObject.objDelete = objDelete;
-        if (!isEmpty(events)) finishedObject.events = events;
-        if (!isEmpty(eventsOrdered)) finishedObject.eventsOrdered = eventsOrdered;
+        if (!isEmpty(this.events)) finishedObject.events = this.events;
+        if (!isEmpty(this.eventsOrdered)) finishedObject.eventsOrdered = this.eventsOrdered;
 
         const buf = this.transcoder.encode(finishedObject);
 
