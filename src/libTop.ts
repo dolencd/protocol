@@ -101,28 +101,6 @@ export interface FnCall {
 }
 
 /**
- * Recursively removes all empty objects and arrays.
- * @param o Object to clean
- * @returns Cleaned object
- */
-function removeUndefinedAndEmpty(o: Record<string, any>) {
-    Object.keys(o).map((k) => {
-        if (o[k] === undefined || o[k] === null || (Array.isArray(o[k]) && o[k].length === 0)) {
-            delete o[k];
-        }
-
-        if (typeof o[k] === "object") {
-            removeUndefinedAndEmpty(o[k]);
-            if (isEmpty(o[k])) {
-                delete o[k];
-            }
-        }
-    });
-
-    return o;
-}
-
-/**
  * Handles application-level calls and packages them into efficient opaque messages.
  */
 export default class LibTop {
@@ -288,6 +266,12 @@ export default class LibTop {
      */
     receiveMessage(msgs: Array<ReceivedMessage> | ReceivedMessage | Buffer): ReceiveMessageObject {
         let input: Array<ReceivedMessage>;
+
+        const events: Array<Buffer> = [];
+        const eventsOrdered: Array<Buffer> = [];
+        const rpcCalls: Array<FnCall> = [];
+        const rpcResults: Array<FnCall> = [];
+
         if (Buffer.isBuffer(msgs)) {
             input = [{ msg: msgs }];
         } else if (!Array.isArray(msgs)) {
@@ -296,13 +280,6 @@ export default class LibTop {
             input = msgs;
         }
 
-        const outputObj: ReceiveMessageObject = {
-            events: [],
-            eventsOrdered: [],
-            rpcCalls: [],
-            rpcResults: [],
-        };
-
         const oldIncObj = this.incObj;
         input.map((msg) => {
             const obj: ProtocolObject = this.transcoder.decode(msg.msg);
@@ -310,19 +287,19 @@ export default class LibTop {
                 // console.log("top decoded", obj)
                 if (obj.events)
                     obj.events.map((b: Buffer) => {
-                        outputObj.events.push(b);
+                        events.push(b);
                     });
 
                 if (obj.reqRpc) {
                     this.receiveFnCalls(obj.reqRpc).map((f: FnCall) => {
-                        outputObj.rpcCalls.push(f);
+                        rpcCalls.push(f);
                     });
                 }
 
                 // receive rpc - responses that were received
                 if (obj.resRpc) {
                     this.receiveFnResults(obj.resRpc).map((res) => {
-                        outputObj.rpcResults.push(res);
+                        rpcResults.push(res);
                     });
                 }
             }
@@ -331,7 +308,7 @@ export default class LibTop {
                 // console.log("top decoded", obj)
                 if (obj.eventsOrdered) {
                     obj.eventsOrdered.map((b: Buffer) => {
-                        outputObj.eventsOrdered.push(b);
+                        eventsOrdered.push(b);
                     });
                 }
 
@@ -339,7 +316,7 @@ export default class LibTop {
                 // receive fn to run
                 if (obj.reqRpcOrdered) {
                     this.receiveFnCalls(obj.reqRpcOrdered).map((f: FnCall) => {
-                        outputObj.rpcCalls.push(f);
+                        rpcCalls.push(f);
                     });
                 }
 
@@ -361,10 +338,21 @@ export default class LibTop {
             }
         });
 
-        outputObj.objSync = differ.getSync(oldIncObj, this.incObj);
-        outputObj.objDelete = differ.getDelete(oldIncObj, this.incObj);
-        outputObj.objAll = this.incObj;
-        return removeUndefinedAndEmpty(outputObj);
+        const objSync = differ.getSync(oldIncObj, this.incObj);
+        const objDelete = differ.getDelete(oldIncObj, this.incObj);
+        const objAll = this.incObj;
+
+        const outputObj: ReceiveMessageObject = {};
+
+        if (!isEmpty(events)) outputObj.events = events;
+        if (!isEmpty(eventsOrdered)) outputObj.eventsOrdered = eventsOrdered;
+        if (!isEmpty(rpcCalls)) outputObj.rpcCalls = rpcCalls;
+        if (!isEmpty(rpcResults)) outputObj.rpcResults = rpcResults;
+        if (!isEmpty(objSync)) outputObj.objSync = objSync;
+        if (!isEmpty(objDelete)) outputObj.objDelete = objDelete;
+        if (!isEmpty(objAll)) outputObj.objAll = objAll;
+
+        return outputObj;
     }
 
     private callFnInternal(requestsMap: Map<number, FnCall>, method: string, args?: Buffer) {
@@ -452,21 +440,22 @@ export default class LibTop {
                 isError: val.result.isError ? val.result.isError : undefined,
             };
         });
+        const objDelete = differ.getDelete(this.outObjSent, this.outObj);
+        const objSync = differ.getSync(this.outObjSent, this.outObj);
 
         const { events, eventsOrdered } = this;
 
-        const finishedObject = {
-            reqRpcOrdered,
-            reqRpc,
-            resRpc,
-            objSync: differ.getSync(this.outObjSent, this.outObj),
-            objDelete: differ.getDelete(this.outObjSent, this.outObj),
-            events,
-            eventsOrdered,
-        };
+        const finishedObject: ProtocolObject = {};
 
-        const cleanedObject = removeUndefinedAndEmpty(finishedObject);
-        const buf = this.transcoder.encode(cleanedObject);
+        if (!isEmpty(reqRpcOrdered)) finishedObject.reqRpcOrdered = reqRpcOrdered;
+        if (!isEmpty(reqRpc)) finishedObject.reqRpc = reqRpc;
+        if (!isEmpty(resRpc)) finishedObject.resRpc = resRpc;
+        if (!isEmpty(objSync)) finishedObject.objSync = objSync;
+        if (!isEmpty(objDelete)) finishedObject.objDelete = objDelete;
+        if (!isEmpty(events)) finishedObject.events = events;
+        if (!isEmpty(eventsOrdered)) finishedObject.eventsOrdered = eventsOrdered;
+
+        const buf = this.transcoder.encode(finishedObject);
 
         const confirmChanges = () => {
             Object.keys(reqRpc).map((key: string) => {
