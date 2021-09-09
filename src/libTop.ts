@@ -77,7 +77,7 @@ export interface FnCall {
     /**
      * Id number of the request
      */
-    id: number;
+    id?: number;
 
     /**
      * Optional arguments encoded as a Buffer.
