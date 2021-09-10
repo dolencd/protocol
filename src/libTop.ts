@@ -219,7 +219,7 @@ export default class LibTop {
         }
     }
 
-    private receiveFnResults(results: Record<string, RpcResObj>): Array<FnCall> {
+    receiveFnResults(results: Record<string, RpcResObj>): Array<FnCall> {
         const returnArr: Array<FnCall> = [];
 
         Object.entries(results).map(([idStr, returnsObj]) => {
