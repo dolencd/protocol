@@ -124,7 +124,7 @@ export default class LibTop {
 
     private transcoder: Transcoder;
 
-    constructor(options: LibTopOptions) {
+    constructor(options: LibTopOptions = {}) {
         this.transcoder = options.transcoder;
 
         if (options.restoreState) {
@@ -442,6 +442,7 @@ export default class LibTop {
             if (val.result.isError === true) resRpc[key].isError = true;
         });
 
+        // TODO: add logic to figure out if it's better to use objAll instead
         const objDelete = differ.getDelete(this.outObjSent, this.outObj);
         const objSync = differ.getSync(this.outObjSent, this.outObj);
 
