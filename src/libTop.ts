@@ -21,7 +21,7 @@ interface RpcResObj {
     isError?: boolean;
 }
 
-interface ProtocolObject {
+export interface ProtocolObject {
     objAll?: Record<string, any>;
     objSync?: Record<string, any>;
     objDelete?: Record<string, any>;
@@ -55,7 +55,7 @@ export interface LibTopOptions {
     /**
      * An object that fits the Transcoder interface that will be used to encode and decode the main protocol payload
      */
-    transcoder?: Transcoder;
+    transcoder: Transcoder;
 
     /**
      * The object that is already synced from the remote host (incoming sync). Setting this will avoid unnecessary syncing. Ignored if restoreState is used.
@@ -124,7 +124,7 @@ export default class LibTop {
 
     private transcoder: Transcoder;
 
-    constructor(options: LibTopOptions = {}) {
+    constructor(options: LibTopOptions) {
         this.transcoder = options.transcoder;
 
         if (options.restoreState) {
