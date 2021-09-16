@@ -55,7 +55,7 @@ export interface LibTopOptions {
     /**
      * An object that fits the Transcoder interface that will be used to encode and decode the main protocol payload
      */
-    transcoder: Transcoder;
+    transcoder?: Transcoder;
 
     /**
      * The object that is already synced from the remote host (incoming sync). Setting this will avoid unnecessary syncing. Ignored if restoreState is used.
