@@ -1,6 +1,6 @@
 {
   "name": "lap-protocol",
-  "version": "1.2.4",
+  "version": "1.3.0",
   "description": "The Low bandwidth Application Protocol simplifies the communication of applications connected by low bandwidth links.",
   "keywords": [
     "IoT",
