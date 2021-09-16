@@ -21,7 +21,7 @@ interface RpcResObj {
     isError?: boolean;
 }
 
-interface ProtocolObject {
+export interface ProtocolObject {
     objAll?: Record<string, any>;
     objSync?: Record<string, any>;
     objDelete?: Record<string, any>;
@@ -77,7 +77,7 @@ export interface FnCall {
     /**
      * Id number of the request
      */
-    id: number;
+    id?: number;
 
     /**
      * Optional arguments encoded as a Buffer.
@@ -219,7 +219,7 @@ export default class LibTop {
         }
     }
 
-    private receiveFnResults(results: Record<string, RpcResObj>): Array<FnCall> {
+    receiveFnResults(results: Record<string, RpcResObj>): Array<FnCall> {
         const returnArr: Array<FnCall> = [];
 
         Object.entries(results).map(([idStr, returnsObj]) => {
@@ -442,6 +442,7 @@ export default class LibTop {
             if (val.result.isError === true) resRpc[key].isError = true;
         });
 
+        // TODO: add logic to figure out if it's better to use objAll instead
         const objDelete = differ.getDelete(this.outObjSent, this.outObj);
         const objSync = differ.getSync(this.outObjSent, this.outObj);
 
