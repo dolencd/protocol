@@ -33,6 +33,9 @@ export interface ProtocolObject {
     code?: number;
     codes?: Array<number>;
     reason?: string;
+    deviceId?: Buffer;
+    deviceTypeName?: Buffer;
+    auth?: Buffer;
 }
 
 export interface ReceiveMessageObject {
