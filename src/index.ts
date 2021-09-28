@@ -67,17 +67,11 @@ export async function createServer(
  * @param authMessage {Buffer} Buffer containing authentication information. If present, it will be passed to the authentication function on the server.
  * @returns
  */
-export function createClient(options: ProtocolOptions, authMessage?: Buffer): [Protocol, Buffer, ErrorObject?] {
+export function createClient(
+    options: ProtocolOptions,
+    initialObject: Record<string, any> = {}
+): [Protocol, Buffer, ErrorObject?] {
     const transcoder = new PbTranscoder(options);
     options.transcoder = transcoder;
-    return [
-        new Protocol(options),
-        encodeSessionId(
-            0,
-            transcoder.encode({
-                auth: authMessage || undefined,
-            })
-        ),
-        null,
-    ];
+    return [new Protocol(options), encodeSessionId(0, transcoder.encode(initialObject)), null];
 }
