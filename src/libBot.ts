@@ -266,7 +266,7 @@ export default class LibBot {
      * @param  {Buffer} message
      * @returns An array of messages to send and the processed received messages
      */
-    receiveMessage(buf: Buffer): [Array<Buffer>, Array<ReceivedMessage> | null] {
+    receiveMessage(buf: Buffer): [Array<Buffer>, Array<ReceivedMessage>] {
         const output: Array<Buffer> = [];
 
         // eslint-disable-next-line prefer-const
@@ -326,7 +326,7 @@ export default class LibBot {
 
         if (seq <= this.maxEmittedSeq) {
             // // console.log(`bot got old message seq:${seq}, maxEmit:${this.maxEmittedSeq}`)
-            return [[], null];
+            return [[], []];
         }
 
         if (seq > this.maxIncSeq) {
