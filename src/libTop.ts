@@ -417,7 +417,7 @@ export default class LibTop {
      * Emit message with all unsent data
      * @function send
      */
-    send(autoConfirmChanges = true): [Buffer, Function | null] {
+    send(autoConfirmChanges = true): [Buffer, () => void | null] {
         const reqRpc: Record<number, RpcReqObj> = {};
         this.requests.forEach((val: FnCall, key: number) => {
             if (val.sent) return;
