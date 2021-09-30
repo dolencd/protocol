@@ -105,7 +105,7 @@ export default class LibBot {
     maxSendSeq: number;
 
     /**
-     * maximum sequence number sent so far
+     * maximum acknowledgement sent so far
      */
     maxSendAck: number;
 
@@ -233,7 +233,9 @@ export default class LibBot {
      * @returns  {Array<Buffer>} Messages to forward to the other side
      */
     sendAcks(): Buffer {
-        const message = tc.encodeSeqAck(0, this.getAcks());
+        const acks = this.getAcks();
+        if (acks[0]) this.maxSendAck = acks[0] + this.recSeqOffset * SEQ_MAX;
+        const message = tc.encodeSeqAck(0, acks);
         return message;
     }
 

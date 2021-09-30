@@ -177,7 +177,7 @@ describe("Full cycle", () => {
 
         expect(bt2.maxIncSeq).toEqual(19);
         expect(bt2.maxEmittedSeq).toEqual(19);
-        expect(bt2.maxSendAck).toEqual(0);
+        expect(bt2.maxSendAck).toEqual(19);
         expect(bt2.failedReceiveMessageCount).toEqual(0);
         expect(bt2.failedSendMessageCount).toEqual(0);
         expect(bt2.maxSendSeq).toEqual(0);
@@ -438,5 +438,53 @@ describe("Full cycle", () => {
 
         expect(bt1a).toEqual(bt1);
         expect(bt2a).toEqual(bt1);
+    });
+
+    test("auto ack message count", () => {
+        const btA = new LibBot();
+        const btB = new LibBot({
+            autoAckAfterMessages: 10,
+        });
+
+        const AtoB: Array<Buffer> = [];
+        const BtoA: Array<Buffer> = [];
+
+        for (let i = 1; i <= 205; i++) {
+            const msgA = btA.send(Buffer.from([i]));
+            AtoB.push(msgA);
+            const msgB = btB.receiveMessage(msgA);
+            expect(msgB[0].length).toBeLessThanOrEqual(1);
+            expect(msgB[1]).toEqual([
+                {
+                    type: ReceivedMessageType.full,
+                    msg: Buffer.from([i]),
+                },
+            ]);
+            if (msgB[0].length > 0) {
+                BtoA.push(msgB[0][0]);
+                const rec = btA.receiveMessage(msgB[0][0]);
+                expect(rec).toEqual([[], []]);
+            }
+        }
+        expect(btA.maxIncSeq).toEqual(0);
+        expect(btA.maxEmittedSeq).toEqual(0);
+        expect(btA.maxSendAck).toEqual(0);
+        expect(btA.failedReceiveMessageCount).toEqual(0);
+        expect(btA.failedSendMessageCount).toEqual(0);
+        expect(btA.maxSendSeq).toEqual(205);
+
+        expect(btB.maxIncSeq).toEqual(205);
+        expect(btB.maxEmittedSeq).toEqual(205);
+        expect(btB.maxSendAck).toEqual(200);
+        expect(btB.failedReceiveMessageCount).toEqual(0);
+        expect(btB.failedSendMessageCount).toEqual(0);
+        expect(btB.maxSendSeq).toEqual(0);
+        // @ts-expect-error
+        expect(btB.recSeqOffset).toEqual(2);
+
+        const t1 = Array.from(Array(205)).map((v, i) => Buffer.from([(i % 100) + 1, 0, 0, i + 1]));
+        const t2 = Array.from(Array(20)).map((v, i) => Buffer.from([0, 0, 1, (i % 10) * 10 + 10, 0]));
+        expect(AtoB).toEqual(t1);
+        expect(BtoA).toEqual(t2);
     });
 });
