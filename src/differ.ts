@@ -1,6 +1,6 @@
 import { transform, isEqual, isPlainObject } from "lodash";
 
-export function applySync(base: Record<string, any> = {}, sync: Record<string, any>) {
+export function applySync(base: Record<string, any> = {}, sync: Record<string, any>): Record<string, any> {
     const out: Record<string, any> = {
         ...base,
     };
@@ -14,7 +14,7 @@ export function applySync(base: Record<string, any> = {}, sync: Record<string, a
     return out;
 }
 
-export function applyDelete(base: Record<string, any>, del: Record<string, any>) {
+export function applyDelete(base: Record<string, any>, del: Record<string, any>): Record<string, any> {
     const out: Record<string, any> = {
         ...base,
     };

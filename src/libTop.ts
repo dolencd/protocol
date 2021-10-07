@@ -21,6 +21,33 @@ interface RpcResObj {
     isError?: boolean;
 }
 
+export interface FnCall {
+    /**
+     * Id number of the request
+     */
+    id?: number;
+
+    /**
+     * Optional arguments encoded as a Buffer.
+     */
+    args?: Buffer;
+
+    /**
+     * The name of the method that was called.
+     */
+    method: string;
+
+    /**
+     * Whether the function call was sent or not. Unused for calls that have been received from the other side.
+     */
+    sent?: boolean;
+
+    /**
+     * Result object. Exists if the response has arrived.
+     */
+    result?: RpcResObj;
+}
+
 export interface ProtocolObject {
     objAll?: Record<string, any>;
     objSync?: Record<string, any>;
@@ -33,6 +60,9 @@ export interface ProtocolObject {
     code?: number;
     codes?: Array<number>;
     reason?: string;
+    deviceId?: Buffer;
+    deviceTypeName?: Buffer;
+    auth?: Buffer;
 }
 
 export interface ReceiveMessageObject {
@@ -71,33 +101,6 @@ export interface LibTopOptions {
      * Restore state of old LibTop instance
      */
     restoreState?: string;
-}
-
-export interface FnCall {
-    /**
-     * Id number of the request
-     */
-    id?: number;
-
-    /**
-     * Optional arguments encoded as a Buffer.
-     */
-    args?: Buffer;
-
-    /**
-     * The name of the method that was called.
-     */
-    method: string;
-
-    /**
-     * Whether the function call was sent or not. Unused for calls that have been received from the other side.
-     */
-    sent?: boolean;
-
-    /**
-     * Result object. Exists if the response has arrived.
-     */
-    result?: RpcResObj;
 }
 
 /**
@@ -395,7 +398,7 @@ export default class LibTop {
      * @function sendEvent
      * @param {Buffer} event Event to send
      */
-    sendEvent(event: Buffer) {
+    sendEvent(event: Buffer): void {
         // console.log(`top send event len:${event.length}`, event)
         this.events.push(event);
     }
@@ -405,7 +408,7 @@ export default class LibTop {
      * @function sendEvent
      * @param {Buffer} event Event to send
      */
-    sendEventOrdered(event: Buffer) {
+    sendEventOrdered(event: Buffer): void {
         // console.log(`top send event len:${event.length}`, event)
         this.eventsOrdered.push(event);
     }
@@ -414,7 +417,7 @@ export default class LibTop {
      * Emit message with all unsent data
      * @function send
      */
-    send(autoConfirmChanges = true): [Buffer, Function | null] {
+    send(autoConfirmChanges = true): [Buffer, () => void | null] {
         const reqRpc: Record<number, RpcReqObj> = {};
         this.requests.forEach((val: FnCall, key: number) => {
             if (val.sent) return;

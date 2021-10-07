@@ -1,5 +1,6 @@
 import { Field, loadSync as pbLoadSync, Root, Type } from "protobufjs";
 import { join } from "path";
+import { ProtocolObject } from "./libTop";
 
 const mainRoot = pbLoadSync(join(__dirname, "../protocol.proto"));
 const mainRootObj = mainRoot.toJSON();
@@ -107,7 +108,7 @@ export class PbTranscoder {
      * @param type Type used to decode. Defaults to main protocol type.
      * @returns The decoded object
      */
-    static decode(buf: Buffer, type = mainType) {
+    static decode(buf: Buffer, type = mainType): ProtocolObject {
         const msg = type.decode(buf);
         const obj = type.toObject(msg, {
             enums: String,
@@ -121,7 +122,7 @@ export class PbTranscoder {
      * @param buf Buffer to decode
      * @returns The decoded object
      */
-    decode(buf: Buffer) {
+    decode(buf: Buffer): ProtocolObject {
         return PbTranscoder.decode(buf, this.type);
     }
 
@@ -131,7 +132,7 @@ export class PbTranscoder {
      * @param type Type used to encode. Defaults to main protocol type.
      * @returns The encoded Buffer
      */
-    static encode(obj: Record<string, any>, type = mainType) {
+    static encode(obj: Record<string, any>, type = mainType): Buffer {
         // const err = this.mainType.verify(obj)
         // if(err) {
         //     throw new Error(err)
@@ -148,7 +149,7 @@ export class PbTranscoder {
      * @param obj Object to encode
      * @returns Encoded Buffer.
      */
-    encode(obj: Record<string, any>) {
+    encode(obj: Record<string, any>): Buffer {
         return PbTranscoder.encode(obj, this.type);
     }
 }

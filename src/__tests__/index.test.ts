@@ -24,7 +24,9 @@ describe("Establishing and communication - LibBot + perfect communication", () =
                 delType: "objBool",
                 methodEnumName: "methods",
             },
-            Buffer.from([1])
+            {
+                auth: Buffer.from([1]),
+            }
         );
         [sp, resMsg, err2] = await createServer(
             {
@@ -152,7 +154,9 @@ describe("Establishing and communication - NO LibBot + perfect communication", (
                 delType: "objBool",
                 methodEnumName: "methods",
             },
-            Buffer.from([1])
+            {
+                auth: Buffer.from([1]),
+            }
         );
         [sp, resMsg, err2] = await createServer(
             {
@@ -293,7 +297,9 @@ describe("Establishing and communication - NO LibBot + perfect communication", (
                     },
                 },
             },
-            Buffer.from([1])
+            {
+                auth: Buffer.from([1]),
+            }
         );
         [sp, resMsg, err2] = await createServer(
             {

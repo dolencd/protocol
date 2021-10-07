@@ -109,6 +109,7 @@ describe("Sending message", () => {
     beforeEach(() => {
         tp = new LibTop({ transcoder: tc });
     });
+
     test("Send regular RPC call", () => {
         tp.callFn("sum", Buffer.from("1234"));
         tp.callFn("add");
