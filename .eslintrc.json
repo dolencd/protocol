@@ -3,9 +3,8 @@
   "plugins": ["typescript", "import"],
   "extends": [
     "airbnb",
-    "prettier",
+    "plugin:prettier/recommended",
     "typescript",
-    "typescript/prettier",
     "plugin:import/errors",
     "plugin:import/warnings",
     "plugin:import/typescript"

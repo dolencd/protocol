@@ -11,7 +11,7 @@ export default class IdCreator {
         this.cur = cur;
     }
 
-    next() {
+    next(): number {
         const id = this.cur;
         if (id >= this.max) {
             this.cur = this.min;

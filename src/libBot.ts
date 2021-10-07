@@ -35,6 +35,13 @@ export interface LibBotOptions {
     restoreState?: string;
 }
 
+// eslint-disable-next-line no-shadow
+export enum ReceivedMessageType {
+    full = "full",
+    ordered = "ordered",
+    unordered = "unordered",
+}
+
 export interface ReceivedMessage {
     /**
      * The message.
@@ -45,12 +52,6 @@ export interface ReceivedMessage {
      * Type of message. If unspecified it is treated as "full".
      */
     type?: ReceivedMessageType;
-}
-
-export enum ReceivedMessageType {
-    full = "full",
-    ordered = "ordered",
-    unordered = "unordered",
 }
 
 /**
@@ -161,21 +162,21 @@ export default class LibBot {
     /**
      * Number of outgoing messages that are known to have been lost after sending (from received acks).
      */
-    get failedSendMessageCount() {
+    get failedSendMessageCount(): number {
         return this.sendFail.size;
     }
 
     /**
      * Number of incomingmessages that are known to have been lost (from received seq).
      */
-    get failedReceiveMessageCount() {
+    get failedReceiveMessageCount(): number {
         return this.maxIncSeq - this.maxEmittedSeq - this.received.size;
     }
 
     /**
      * Messages that have been sent, but not yet acked.
      */
-    get unackedMessageCount() {
+    get unackedMessageCount(): number {
         return this.sent.size;
     }
 

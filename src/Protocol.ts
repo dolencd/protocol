@@ -35,7 +35,7 @@ export class Protocol extends EventEmitter {
 
     private options: ProtocolOptions;
 
-    private fnCalls: Map<number, { resolve: Function; reject: Function }>;
+    private fnCalls: Map<number, { resolve: (response: Buffer) => void; reject: (response: Buffer) => void }>;
 
     /**
      * Initialise the Protocol class. It is not recommended to use this directly.
@@ -59,7 +59,7 @@ export class Protocol extends EventEmitter {
      * Cycles when maximum is reached
      * Returns null if LibBot is disabled
      */
-    get maxSendSeq() {
+    get maxSendSeq(): number {
         if (this.bt) return this.bt.maxSendSeq;
         return null;
     }
@@ -243,7 +243,11 @@ export class Protocol extends EventEmitter {
         return this.callFnInternal(this.tp.callFnOrdered, method, args);
     }
 
-    private callFnInternal(fn: Function, method: string, args?: Buffer): Promise<Buffer> {
+    private callFnInternal(
+        fn: (method: string, args?: Buffer) => number,
+        method: string,
+        args?: Buffer
+    ): Promise<Buffer> {
         const id = fn.call(this.tp, method, args);
 
         if (this.fnCalls.has(id)) {

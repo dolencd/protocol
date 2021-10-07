@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { take, flatten } from "lodash";
 import { ReceivedMessage } from "..";
 import LibBot, { ReceivedMessageType } from "../libBot";

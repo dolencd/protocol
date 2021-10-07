@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/ban-ts-ignore */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import {
     decodeClientId,
     encodeClientId,
@@ -26,7 +26,7 @@ describe("clientId", () => {
 
     test("decode - error", () => {
         expect(() => {
-            // @ts-ignore
+            // @ts-expect-error
             decodeClientId(12);
         }).toThrow(TypeError);
 
@@ -41,12 +41,12 @@ describe("clientId", () => {
 
     test("encode - error", () => {
         expect(() => {
-            // @ts-ignore
+            // @ts-expect-error
             encodeClientId(12, Buffer.allocUnsafe(3));
         }).toThrow(TypeError);
 
         expect(() => {
-            // @ts-ignore
+            // @ts-expect-error
             encodeClientId(Buffer.allocUnsafe(3), 12);
         }).toThrow(TypeError);
 
@@ -79,7 +79,7 @@ describe("seqAck", () => {
 
     test("decode - error", () => {
         expect(() => {
-            // @ts-ignore
+            // @ts-expect-error
             decodeSeqAck(12);
         }).toThrow(TypeError);
 
