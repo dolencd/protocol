@@ -48,7 +48,7 @@ export class Protocol extends EventEmitter {
         this.tp = new LibTop(options);
 
         if (options.enableOrdering) {
-            this.bt = new LibBot();
+            this.bt = new LibBot(options);
         }
 
         this.fnCalls = new Map();
@@ -129,9 +129,9 @@ export class Protocol extends EventEmitter {
             return [processedMsg, []];
         }
 
-        const [messages, processedMessage]: [Array<Buffer>, Array<ReceivedMessage>] = this.bt.receiveMessage.call(
+        const [messages, processedMessage]: [Array<Buffer>, Array<ReceivedMessage>] = this.bt.receiveMessages.call(
             this.bt,
-            event
+            [event]
         );
 
         const processedMsg = this.tp.receiveMessage.call(this.tp, processedMessage);

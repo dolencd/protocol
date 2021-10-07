@@ -1,3 +1,4 @@
+import { union, max } from "lodash";
 import * as tc from "./transcoder";
 import { stringify as serializerStringify, parse as serializerParse } from "./serializer";
 
@@ -268,36 +269,48 @@ export default class LibBot {
      * @param  {Buffer} message
      * @returns An array of messages to send and the processed received messages
      */
-    receiveMessage(buf: Buffer): [Array<Buffer>, Array<ReceivedMessage>] {
+    receiveMessages(bufs: Array<Buffer>): [Array<Buffer>, Array<ReceivedMessage>] {
         const output: Array<Buffer> = [];
+        const oldReceivedKeys = Array.from(this.received.keys());
+        const received = bufs.map((buf): [number, Array<number>, Buffer] => {
+            // eslint-disable-next-line prefer-const
+            let [seq, acks, payload] = tc.decodeSeqAck(buf);
+            // console.log(`bot received message seq:${seq} plen:${payload.length} acks:`, acks);
 
-        // eslint-disable-next-line prefer-const
-        let [seq, acks, payload] = tc.decodeSeqAck(buf);
-        // console.log(`bot received message seq:${seq} plen:${payload.length} acks:`, acks);
-
-        // Adapt offset
-        if (this.inTransition && seq > adaptOffset(this.maxEmittedSeq)) {
-            this.inTransition = false;
-            // transition stage has ended
-            this.recSeqOffset++;
-        }
-        if (seq < SEQ_LOWER && adaptOffset(this.maxEmittedSeq) > SEQ_UPPER) {
-            // transition stage
-            if (!this.inTransition) this.inTransition = true;
-            seq += (this.recSeqOffset + 1) * SEQ_MAX;
-        } else {
-            seq += this.recSeqOffset * SEQ_MAX;
-        }
-        acks = acks.map((a) => {
-            a += Math.floor(this.maxSendSeqKnownReceived / SEQ_MAX) * SEQ_MAX;
-            if (a < this.maxSendSeqKnownReceived) {
-                a += SEQ_MAX;
+            // Adapt offset
+            if (this.inTransition && seq > adaptOffset(this.maxEmittedSeq)) {
+                this.inTransition = false;
+                // transition stage has ended
+                this.recSeqOffset++;
             }
-            return a;
+            if (seq > 0 && seq < SEQ_LOWER && adaptOffset(this.maxEmittedSeq) > SEQ_UPPER) {
+                // transition stage
+                if (!this.inTransition) this.inTransition = true;
+                seq += (this.recSeqOffset + 1) * SEQ_MAX;
+            } else {
+                seq += this.recSeqOffset * SEQ_MAX;
+            }
+            acks = acks.map((a) => {
+                a += Math.floor(this.maxSendSeqKnownReceived / SEQ_MAX) * SEQ_MAX;
+                if (a > 0 && this.inTransition && a < this.maxSendSeqKnownReceived) {
+                    a += SEQ_MAX;
+                }
+                return a;
+            });
+
+            if (!this.received.has(seq)) this.received.set(seq, payload);
+            return [seq, acks, payload];
         });
 
         // Process Acks
-        const [maxAck, ...missingAcks] = acks;
+        const maxAck = max(received.map((v) => v[1][0] || 0)); // find the highest max ack of all messages
+        const missingAcks: Array<number> = union(
+            ...received.map((v) => {
+                if (!v[1] || v[1].length <= 1) return []; // No missing acks are present
+                return v[1].slice(1); // remove first ack
+            })
+        );
+
         if (maxAck > this.maxSendSeqKnownReceived) {
             this.maxSendSeqKnownReceived = maxAck;
             // console.log(`bot new max ack ${maxAck}`);
@@ -314,35 +327,62 @@ export default class LibBot {
             });
             this.sent.clear();
 
-            // console.log(
-            //     `bot acks processed max:${maxAck} sendFail:${Array.from(this.sendFail.keys())} sent:${Array.from(
-            //         this.sent.keys()
-            //     )}`
-            // );
-            // done incoming acks
-
             if (this.options.autoRetransmit && this.failedSendMessageCount > 0) {
                 this.sendFailedMessages().map((b) => output.push(b));
             }
         }
 
-        if (seq <= this.maxEmittedSeq) {
-            // // console.log(`bot got old message seq:${seq}, maxEmit:${this.maxEmittedSeq}`)
-            return [[], []];
-        }
+        const maxIncSeq = max(received.map((v) => v[0]));
+        // if (maxIncSeq <= this.maxEmittedSeq) {
+        //     // // console.log(`bot got old message seq:${seq}, maxEmit:${this.maxEmittedSeq}`)
+        //     return [output, []];
+        // }
 
-        if (seq > this.maxIncSeq) {
-            this.maxIncSeq = seq;
+        if (maxIncSeq > this.maxIncSeq) {
+            this.maxIncSeq = maxIncSeq;
         }
+        const outputReceivedMessages: Array<ReceivedMessage> = [];
+        Array.from(this.received.keys())
+            .sort((first, second) => {
+                return first - second;
+            })
+            .forEach((k) => {
+                if (k <= this.maxEmittedSeq) {
+                    // Message has been fully emitted already
+                    this.received.delete(k);
+                    return;
+                }
 
-        if (seq !== 0) this.received.set(seq, payload);
-        // emit messages that are in sequence
-        const orderedMessages: Array<Buffer> = [];
-        while (this.received.has(this.maxEmittedSeq + 1)) {
-            this.maxEmittedSeq++;
-            orderedMessages.push(this.received.get(this.maxEmittedSeq));
-            this.received.delete(this.maxEmittedSeq);
-        }
+                const v = this.received.get(k);
+                if (k !== this.maxEmittedSeq + 1) {
+                    // message is not the next ordered message
+                    if (oldReceivedKeys.includes(k)) {
+                        // message is not new. It has already been emitted as unordered
+                        return;
+                    }
+                    // message is new. Emit unordered
+                    outputReceivedMessages.push({
+                        type: ReceivedMessageType.unordered,
+                        msg: v,
+                    });
+                    return;
+                }
+                this.maxEmittedSeq++;
+                this.received.delete(k);
+                if (oldReceivedKeys.includes(k)) {
+                    // message is not new. It has already been emitted as unordered and needs to be emitted as ordered
+                    outputReceivedMessages.push({
+                        type: ReceivedMessageType.ordered,
+                        msg: v,
+                    });
+                } else {
+                    // Message is new and is next in line. Emit as full
+                    outputReceivedMessages.push({
+                        type: ReceivedMessageType.full,
+                        msg: v,
+                    });
+                }
+            });
 
         // Send acks if this.autoAckAfterMessages messages have been received without an acknowledgement being sent
         if (
@@ -353,22 +393,6 @@ export default class LibBot {
         ) {
             output.push(this.sendAcks());
         }
-
-        const outputReceivedMessages: Array<ReceivedMessage> = [];
-        if (payload.length > 0) {
-            outputReceivedMessages.push({
-                msg: payload,
-                type: orderedMessages.includes(payload) ? ReceivedMessageType.full : ReceivedMessageType.unordered,
-            });
-        }
-
-        orderedMessages.map((msg) => {
-            if (msg === payload) return;
-            outputReceivedMessages.push({
-                msg,
-                type: ReceivedMessageType.ordered,
-            });
-        });
 
         return [output, outputReceivedMessages];
     }
