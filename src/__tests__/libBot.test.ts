@@ -443,7 +443,7 @@ describe("Full cycle", () => {
         expect(bt2a).toEqual(bt1);
     });
 
-    test("auto ack message count", () => {
+    test("auto ack after message count", () => {
         const btA = new LibBot();
         const btB = new LibBot({
             autoAckAfterMessages: 10,
@@ -680,5 +680,103 @@ describe("Full cycle", () => {
         expect(bt.maxSendSeq).toEqual(0);
         // @ts-expect-error
         expect(bt.recSeqOffset).toEqual(0);
+    });
+
+    test("Multiple message - SEQ looping lossy", () => {
+        const bt1 = new LibBot({
+            autoRetransmit: true,
+        });
+        const bt2 = new LibBot({
+            autoAckOnFailedMessages: 1,
+        });
+
+        const outArrOrdered: Array<Buffer> = [];
+
+        let count = 0;
+        for (let i = 1; i <= 205; i += 5) {
+            const input = Array.from(Array(5))
+                .map((v, o: number): Buffer => {
+                    return Buffer.from([o + i]);
+                })
+                .map(bt1.send.bind(bt1))
+                // eslint-disable-next-line no-loop-func
+                .map((v: Buffer) => {
+                    expect(v[0]).toBeLessThanOrEqual(100);
+                    return v;
+                })
+                // eslint-disable-next-line no-loop-func
+                .filter(() => {
+                    count++;
+                    return count % 3 !== 0;
+                });
+
+            const [messagesToSend, transmissionObj] = bt2.receiveMessages(input);
+            transmissionObj.map((msgObj) => {
+                switch (msgObj.type) {
+                    case ReceivedMessageType.unordered:
+                        break;
+                    case ReceivedMessageType.ordered:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                    default:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                }
+            });
+            const [messagesToSend2, transmissionObj2] = bt2.receiveMessages(
+                bt1.receiveMessages(
+                    // eslint-disable-next-line no-loop-func
+                    messagesToSend.filter(() => {
+                        count++;
+                        return count % 3 !== 0;
+                    })
+                )[0]
+            );
+            transmissionObj2.map((msgObj) => {
+                switch (msgObj.type) {
+                    case ReceivedMessageType.unordered:
+                        break;
+                    case ReceivedMessageType.ordered:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                    default:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                }
+            });
+
+            const [messagesToSend3, transmissionObj3] = bt2.receiveMessages(bt1.receiveMessages(messagesToSend2)[0]);
+            expect(messagesToSend3).toEqual([]);
+            transmissionObj3.map((msgObj) => {
+                switch (msgObj.type) {
+                    case ReceivedMessageType.unordered:
+                        break;
+                    case ReceivedMessageType.ordered:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                    default:
+                        outArrOrdered.push(msgObj.msg);
+                        break;
+                }
+            });
+        }
+
+        expect(bt1.maxIncSeq).toEqual(0);
+        expect(bt1.maxEmittedSeq).toEqual(0);
+        expect(bt1.maxSendAck).toEqual(0);
+        expect(bt1.failedReceiveMessageCount).toEqual(0);
+        expect(bt1.failedSendMessageCount).toEqual(0);
+        expect(bt1.maxSendSeq).toEqual(205);
+
+        expect(bt2.maxIncSeq).toEqual(205);
+        expect(bt2.maxEmittedSeq).toEqual(205);
+        expect(bt2.maxSendAck).toEqual(205);
+        expect(bt2.failedReceiveMessageCount).toEqual(0);
+        expect(bt2.failedSendMessageCount).toEqual(0);
+        expect(bt2.maxSendSeq).toEqual(0);
+        // @ts-expect-error
+        expect(bt2.recSeqOffset).toEqual(2);
+
+        expect(outArrOrdered).toEqual(Array.from(Array(205)).map((v, i) => Buffer.from([i + 1])));
     });
 });

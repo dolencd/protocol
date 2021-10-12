@@ -2,7 +2,7 @@ import { union, max } from "lodash";
 import * as tc from "./transcoder";
 import { stringify as serializerStringify, parse as serializerParse } from "./serializer";
 
-const SEQ_MAX = process.env.NODE_ENV === "test" ? 100 : 2 ** 16 - 1;
+const SEQ_MAX = process.env.NODE_ENV === "test" ? 100 : 200; // 2 ** 16 - 1;
 const SEQ_LOWER = Math.floor(SEQ_MAX * 0.1);
 const SEQ_UPPER = Math.floor(SEQ_MAX * 0.9);
 
@@ -77,7 +77,7 @@ export default class LibBot {
     >;
 
     /**
-     * True if LibBot is currently looping seq numbers
+     * True if LibBot is currently looping receiving seq numbers
      */
     private inTransition: boolean;
 
@@ -167,6 +167,18 @@ export default class LibBot {
     }
 
     /**
+     * Highest sent seq that has been emitted on the other side. All messages up to and including this one have been correctly received
+     */
+    get maxSendSeqKnownEmitted(): number {
+        const failKeysArr = Array.from(this.sendFail.keys());
+        const sentKeysArr = Array.from(this.sent.keys());
+        // const min = Math.min(...failKeysArr, ...sentKeysArr)
+        if (failKeysArr.length > 0 || sentKeysArr.length > 0) return Math.min(...failKeysArr, ...sentKeysArr) - 1;
+        // if (keysArr && keysArr.length > 0) return Math.min(...keysArr) - 1;
+        return this.maxSendSeqKnownReceived;
+    }
+
+    /**
      * Number of incomingmessages that are known to have been lost (from received seq).
      */
     get failedReceiveMessageCount(): number {
@@ -192,14 +204,12 @@ export default class LibBot {
         const acks = this.getAcks();
 
         const msg = tc.encodeSeqAck(adaptOffset(this.maxSendSeq), acks, buf);
-        // if (acks[0] > this.maxSendAck) {
-        //     [this.maxSendAck] = acks;
-        // }
 
         let maxAck;
         if (acks.length > 0) {
             maxAck = acks[0] + this.recSeqOffset * SEQ_MAX;
             if (this.inTransition && acks[0] < SEQ_LOWER) maxAck += SEQ_MAX;
+            this.maxSendAck = maxAck;
         }
 
         this.sent.set(this.maxSendSeq, {
@@ -217,7 +227,6 @@ export default class LibBot {
     sendFailedMessages(): Array<Buffer> {
         // TODO: add options: force retransmit, add acks (to none, all, some?)
         const toSend: Array<Buffer> = [];
-        // console.log(`bot sending seq:${this.maxSendSeq}, len:${buf.length}`, buf);
         this.sendFail.forEach((v, k) => {
             const msg = tc.encodeSeqAck(adaptOffset(k), [], v);
             toSend.push(msg);
@@ -236,7 +245,9 @@ export default class LibBot {
      */
     sendAcks(): Buffer {
         const acks = this.getAcks();
-        if (acks[0]) this.maxSendAck = acks[0] + this.recSeqOffset * SEQ_MAX;
+        if (acks[0])
+            this.maxSendAck =
+                acks[0] + SEQ_MAX * (this.recSeqOffset + (this.inTransition && acks[0] < SEQ_LOWER ? 1 : 0));
         const message = tc.encodeSeqAck(0, acks);
         return message;
     }
@@ -252,12 +263,10 @@ export default class LibBot {
             // some acks must be sent
             acks.push(adaptOffset(this.maxIncSeq));
             for (let i = this.maxEmittedSeq + 1; i <= this.maxIncSeq; i++) {
-                // // console.log(`---other acks min:${this.maxEmittedSeq}, max:${this.maxIncSeq}, i:${i}`, this.received.has(i))
                 if (this.received.has(i)) {
                     continue;
                 }
 
-                // console.log(`- --- pushing ${i} into outgoing acks`);
                 acks.push(adaptOffset(i));
             }
         }
@@ -273,35 +282,37 @@ export default class LibBot {
     receiveMessages(bufs: Array<Buffer>): [Array<Buffer>, Array<ReceivedMessage>] {
         const output: Array<Buffer> = [];
         const oldReceivedKeys = Array.from(this.received.keys());
-        const received = bufs.map((buf): [number, Array<number>, Buffer] => {
-            // eslint-disable-next-line prefer-const
-            let [seq, acks, payload] = tc.decodeSeqAck(buf);
-            // console.log(`bot received message seq:${seq} plen:${payload.length} acks:`, acks);
-
-            // Adapt offset
-            if (this.inTransition && seq > adaptOffset(this.maxEmittedSeq)) {
-                this.inTransition = false;
-                // transition stage has ended
-                this.recSeqOffset++;
-            }
-            if (seq > 0 && seq < SEQ_LOWER && adaptOffset(this.maxEmittedSeq) > SEQ_UPPER) {
-                // transition stage
-                if (!this.inTransition) this.inTransition = true;
-                seq += (this.recSeqOffset + 1) * SEQ_MAX;
-            } else {
-                seq += this.recSeqOffset * SEQ_MAX;
-            }
-            acks = acks.map((a) => {
-                a += Math.floor(this.maxSendSeqKnownReceived / SEQ_MAX) * SEQ_MAX;
-                if (a > 0 && this.inTransition && a < this.maxSendSeqKnownReceived) {
-                    a += SEQ_MAX;
+        const received = bufs
+            .map(tc.decodeSeqAck)
+            .filter((v) => {
+                return v[0] + this.recSeqOffset * SEQ_MAX < this.maxIncSeq + SEQ_MAX / 4;
+            })
+            .map(([seq, acks, payload]): [number, Array<number>, Buffer] => {
+                // Adapt offset
+                if (seq > 0 && seq < SEQ_LOWER && this.maxEmittedSeq - this.recSeqOffset * SEQ_MAX > SEQ_UPPER) {
+                    // transition stage
+                    if (!this.inTransition) this.inTransition = true;
+                    seq += (this.recSeqOffset + 1) * SEQ_MAX;
+                } else {
+                    seq += this.recSeqOffset * SEQ_MAX;
                 }
-                return a;
-            });
 
-            if (!this.received.has(seq)) this.received.set(seq, payload);
-            return [seq, acks, payload];
-        });
+                if (this.inTransition && this.maxEmittedSeq - this.recSeqOffset * SEQ_MAX > SEQ_MAX) {
+                    this.inTransition = false;
+                    // transition stage has ended
+                    this.recSeqOffset++;
+                }
+                acks = acks.map((a) => {
+                    a += Math.floor(this.maxSendSeqKnownEmitted / SEQ_MAX) * SEQ_MAX;
+                    if (a > 0 && a < this.maxSendSeqKnownEmitted) {
+                        a += SEQ_MAX;
+                    }
+                    return a;
+                });
+
+                if (!this.received.has(seq)) this.received.set(seq, payload);
+                return [seq, acks, payload];
+            });
 
         // Process Acks
         const maxAck = max(received.map((v) => v[1][0] || 0)); // find the highest max ack of all messages
@@ -314,30 +325,23 @@ export default class LibBot {
 
         if (maxAck > this.maxSendSeqKnownReceived) {
             this.maxSendSeqKnownReceived = maxAck;
-            // console.log(`bot new max ack ${maxAck}`);
         }
         if (maxAck) {
             this.sent.forEach((v, k) => {
                 if (missingAcks.includes(k) || k > maxAck) {
-                    // console.log(`bot delivery failed. set up for redelivery seq:${k}, maxAck:${maxAck}`, missingAcks);
                     this.sendFail.set(k, v.buf);
                 } else if (v.maxAck && v.maxAck > this.maxSendAckKnownReceived) {
                     this.maxSendAckKnownReceived = v.maxAck;
                 }
-                // console.log(`bot delete seq:${k} from sent, maxAck:${maxAck}`, missingAcks)
             });
             this.sent.clear();
 
             if (this.options.autoRetransmit && this.failedSendMessageCount > 0) {
-                this.sendFailedMessages().map((b) => output.push(b));
+                output.push(...this.sendFailedMessages());
             }
         }
 
         const maxIncSeq = max(received.map((v) => v[0]));
-        // if (maxIncSeq <= this.maxEmittedSeq) {
-        //     // // console.log(`bot got old message seq:${seq}, maxEmit:${this.maxEmittedSeq}`)
-        //     return [output, []];
-        // }
 
         if (maxIncSeq > this.maxIncSeq) {
             this.maxIncSeq = maxIncSeq;

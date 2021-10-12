@@ -1,6 +1,7 @@
 const { join: pathJoin } = require("path");
 const dgramCreateSocket = require("dgram").createSocket;
 const { createServer, decodeSessionId, encodeSessionId } = require("../dist");
+const { decodeSeqAck } = require("../dist/transcoder");
 
 const clients = new Map();
 
@@ -22,11 +23,6 @@ class IdCreator {
     }
 }
 const idCreator = new IdCreator(1, 65535);
-
-// The example does not use any kind of authentication
-function authFn() {
-    return true;
-}
 
 async function handleNewClient(sessionId, protocol) {
     protocol.on("event", (event) => {
@@ -57,11 +53,12 @@ const server = dgramCreateSocket("udp4");
 server.on("message", async (msg, rinfo) => {
     const decodedMessage = decodeSessionId(msg);
     let sessionId = decodedMessage[0];
-    const msgPayload = decodedMessage[2];
+    const msgPayload = decodedMessage[1];
 
     if (sessionId !== 0 && clients.has(sessionId)) {
         const client = clients.get(sessionId);
         client.rinfo = rinfo;
+        console.log("received", msgPayload[0], decodeSeqAck(msgPayload));
         client.protocol.receiveMessage(msgPayload);
     } else {
         // this is too permissive. an unknown sessionId is treated the same as 0 when it should reject
@@ -75,11 +72,12 @@ server.on("message", async (msg, rinfo) => {
             {
                 autoRetransmit: true,
                 autoAckAfterMessages: 10,
+                autoAckOnFailedMessages: 1,
                 enableOrdering: true,
                 protoPath: pathJoin(__dirname, "main.proto"),
             },
             msgPayload,
-            authFn
+            false
         );
 
         if (error) {
@@ -93,14 +91,12 @@ server.on("message", async (msg, rinfo) => {
             server.send(encodeSessionId(sessionId, sendMsg), rinfo.port, rinfo.address);
         });
 
-        server.send(encodeSessionId(sessionId, resMessage), rinfo.port, rinfo.address);
-
-        protocol.outObj.sendInterval = 800;
-        protocol.outObj.eventAInterval = 900;
-        protocol.outObj.eventBInterval = 1100;
-        protocol.outObj.callMethodAInterval = 1100;
-        protocol.outObj.callMethodBInterval = 500;
-        protocol.outObj.valUpdateInterval = 700;
+        protocol.outObj.sendInterval = 500;
+        protocol.outObj.eventAInterval = 500;
+        protocol.outObj.eventBInterval = 500;
+        // protocol.outObj.callMethodAInterval = 1100;
+        // protocol.outObj.callMethodBInterval = 500;
+        // protocol.outObj.valUpdateInterval = 700;
         protocol.send();
 
         clients.set(sessionId, {

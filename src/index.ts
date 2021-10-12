@@ -42,7 +42,8 @@ export async function createServer(
                 if (authRes.reason) errObj.reason = authRes.reason;
             }
         }
-    } catch (_) {
+    } catch (e) {
+        console.error("got error", e);
         errObj.code = 500;
     }
 
