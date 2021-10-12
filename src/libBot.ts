@@ -2,7 +2,7 @@ import { union, max } from "lodash";
 import * as tc from "./transcoder";
 import { stringify as serializerStringify, parse as serializerParse } from "./serializer";
 
-const SEQ_MAX = process.env.NODE_ENV === "test" ? 100 : 200; // 2 ** 16 - 1;
+const SEQ_MAX = process.env.NODE_ENV === "test" ? 100 : 2 ** 16 - 1;
 const SEQ_LOWER = Math.floor(SEQ_MAX * 0.1);
 const SEQ_UPPER = Math.floor(SEQ_MAX * 0.9);
 
