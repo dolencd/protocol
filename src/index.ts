@@ -29,7 +29,7 @@ export async function createServer(
     authFn?: (authBuf: Buffer) => true | ErrorObject
 ): Promise<[Protocol, Buffer, ReceiveMessageObject, ErrorObject?]> {
     const errObj: ErrorObject = {};
-    const transcoder = new PbTranscoder(options);
+    const transcoder = options.transcoder || new PbTranscoder(options);
     options.transcoder = transcoder;
 
     try {
