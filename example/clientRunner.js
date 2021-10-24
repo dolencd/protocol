@@ -1,24 +1,31 @@
-const { fork } = require("child_process");
-const { join: pathJoin } = require("path");
+const { setTimeout } = require("timers/promises");
+const client = require("./client");
 
 const opts = {
     port_lower: parseInt(process.argv[2], 10),
     port_upper: parseInt(process.argv[3], 10),
     host_addr: process.argv[4],
     host_port: parseInt(process.argv[5], 10),
+    idPrefix: process.argv[6],
+    typeName: process.argv[7],
 };
 
 console.log(opts);
 
 async function main() {
-    let i = opts.port_lower;
-    const interval = setInterval(() => {
-        if (i > opts.port_upper) clearInterval(interval);
-        console.log("Starting", i);
-        fork(pathJoin(__dirname, "client.js"), [i, opts.host_addr, opts.host_port], {
-            stdio: false,
+    for (let i = opts.port_lower; i < opts.port_upper; i++) {
+        // eslint-disable-next-line no-await-in-loop
+        await setTimeout(30);
+        client({
+            origin_port: i,
+            host_addr: opts.host_addr,
+            host_port: opts.host_port,
+            deviceId: `${opts.idPrefix}-${i - opts.port_lower}`,
+            deviceTypeName: opts.typeName,
         });
-        i++;
-    }, 20);
+    }
 }
-main();
+main().catch((e) => {
+    console.error(e);
+    process.exit(1);
+});
