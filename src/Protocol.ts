@@ -98,6 +98,10 @@ export class Protocol extends EventEmitter {
         return this.tp.outObj;
     }
 
+    set outObj(obj: Record<string, any>) {
+        this.tp.outObj = obj;
+    }
+
     /**
      * Package all data and get a Buffer to send to the other side.
      * @function send
