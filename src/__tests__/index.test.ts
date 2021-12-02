@@ -28,7 +28,7 @@ describe("Establishing and communication - LibBot + perfect communication", () =
                 auth: Buffer.from([1]),
             }
         );
-        [sp, resMsg, err2] = await createServer(
+        [sp, resMsg, , err2] = await createServer(
             {
                 enableOrdering: true,
                 protoPath: "./src/__tests__/test.proto",
@@ -158,7 +158,7 @@ describe("Establishing and communication - NO LibBot + perfect communication", (
                 auth: Buffer.from([1]),
             }
         );
-        [sp, resMsg, err2] = await createServer(
+        [sp, resMsg, , err2] = await createServer(
             {
                 enableOrdering: false,
                 protoPath: "./src/__tests__/test.proto",
@@ -301,7 +301,7 @@ describe("Establishing and communication - NO LibBot + perfect communication", (
                 auth: Buffer.from([1]),
             }
         );
-        [sp, resMsg, err2] = await createServer(
+        [sp, resMsg, , err2] = await createServer(
             {
                 enableOrdering: false,
                 protoPath: "./src/__tests__/test.proto",

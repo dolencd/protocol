@@ -2,6 +2,7 @@ import { encodeSessionId, encodeSeqAck } from "./transcoder";
 import { Protocol, ProtocolOptions } from "./Protocol";
 
 import { PbTranscoder } from "./PbTranscoder";
+import { ReceiveMessageObject } from "./libTop";
 
 export * from "./serializer";
 export { PbTranscoder } from "./PbTranscoder";
@@ -26,9 +27,9 @@ export async function createServer(
     options: ProtocolOptions,
     initialMessage: Buffer,
     authFn?: (authBuf: Buffer) => true | ErrorObject
-): Promise<[Protocol, Buffer, ErrorObject?]> {
+): Promise<[Protocol, Buffer, ReceiveMessageObject, ErrorObject?]> {
     const errObj: ErrorObject = {};
-    const transcoder = new PbTranscoder(options);
+    const transcoder = options.transcoder || new PbTranscoder(options);
     options.transcoder = transcoder;
 
     try {
@@ -42,23 +43,24 @@ export async function createServer(
                 if (authRes.reason) errObj.reason = authRes.reason;
             }
         }
-    } catch (_) {
+    } catch (e) {
+        console.error("got error", e);
         errObj.code = 500;
     }
 
     if (errObj.code) {
         console.log("connection rejected");
         if (options.enableOrdering) {
-            return [null, encodeSeqAck(0, [], transcoder.encode(errObj)), errObj];
+            return [null, encodeSeqAck(0, [], transcoder.encode(errObj)), {}, errObj];
         }
-        return [null, transcoder.encode(errObj), errObj];
+        return [null, transcoder.encode(errObj), {}, errObj];
     }
 
     // auth is OK
     const protocol = new Protocol(options);
-    await protocol.tp.receiveMessage(initialMessage); // receiveMessage needs to become async
+    const receivedMessageObject = protocol.tp.receiveMessage(initialMessage); // receiveMessage needs to become async
     const buf = protocol.send();
-    return [protocol, buf, null];
+    return [protocol, buf, receivedMessageObject, null];
 }
 
 /**
